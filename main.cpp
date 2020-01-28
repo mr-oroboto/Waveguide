@@ -11,6 +11,7 @@
 #include "scenario/circular/CircularSpectrum.h"
 #include "scenario/linear/LinearTimeSpectrum.h"
 #include "scenario/cylindrical/CylindricalSpectrum.h"
+#include "scenario/help/Help.h"
 
 #define WINDOW_FULLSCREEN false
 #define WINDOW_X_SIZE 2560
@@ -25,9 +26,15 @@ bool handleKeystroke(WindowManager* window_manager, SDL_Event keystroke_event, G
 
     if (keystroke_event.type == SDL_KEYDOWN)
     {
-        if (keystroke_event.key.keysym.sym == SDLK_n)
+        switch (keystroke_event.key.keysym.sym)
         {
-            scenarios.nextScenario();
+            case SDLK_n:
+                scenarios.nextScenario();
+                break;
+
+            case SDLK_h:
+                scenarios.selectScenario(0);
+                break;
         }
     }
 
@@ -88,9 +95,10 @@ int main()
 
     scenarios.initialise(&window_manager);
 
-    scenarios.addScenario(new GridSpectrum(display_manager, sampler, 100));
+    scenarios.addScenario(new Help(display_manager, WINDOW_X_SIZE, WINDOW_Y_SIZE));
     scenarios.addScenario(new LinearSpectrum(display_manager, sampler, 1000));
     scenarios.addScenario(new LinearTimeSpectrum(display_manager, sampler, 1000));
+    scenarios.addScenario(new GridSpectrum(display_manager, sampler, 100));
     scenarios.addScenario(new SphereSpectrum(display_manager, sampler, 600));
     scenarios.addScenario(new CylindricalSpectrum(display_manager, sampler, 600));
     scenarios.addScenario(new CircularSpectrum(display_manager, sampler, 80));

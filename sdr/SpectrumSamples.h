@@ -29,7 +29,7 @@ namespace sdr {
         uint64_t getSweepCount();
 
     private:
-        friend class SampleThread;
+        friend class VectorSinkBlock;
 
         void setLatestSample(uint64_t freq_hz, float amplitude, uint64_t sweep_count);
         uint64_t getBinNumber(uint64_t freq_hz);

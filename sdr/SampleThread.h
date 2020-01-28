@@ -3,6 +3,7 @@
 
 #include <thread>
 #include <string>
+#include <chrono>
 #include <cstdint>
 
 #include "SpectrumSamples.h"
@@ -29,9 +30,10 @@ namespace sdr {
         uint64_t start_freq_hz_;
         uint64_t end_freq_hz_;
         uint64_t sample_rate_hz_;
-        uint32_t dwell_time_us_;                    // how long to dwell on each tuned center freq (split into n FFT iterations)
-        uint16_t iterations_per_dwell_time_;        // how many FFT iterations to perform over the course of a dwell
         uint64_t sweep_count_;                      // how many total sweeps from start_freq_hz_ to end_freq_hz_ have been done?
+
+        uint32_t dwell_time_us_;                    // how long to dwell on each tuned center freq (split into n FFT iterations)
+        std::chrono::high_resolution_clock::time_point last_retuned_at_;
 
         bool stop_;
     };

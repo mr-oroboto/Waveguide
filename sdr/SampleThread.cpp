@@ -1,8 +1,12 @@
 #include "SampleThread.h"
 
+#include "VectorSinkBlock.h"
+
 #include <iostream>
 #include <vector>
 #include <cmath>
+
+#include <unistd.h>
 
 #include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_c.h>
@@ -16,8 +20,6 @@
 #include <gnuradio/blocks/null_sink.h>
 #include <osmosdr/source.h>
 
-#include <unistd.h>
-
 sdr::SampleThread::SampleThread(const std::string& device_type, uint8_t device_id, uint64_t start_freq_hz,
                                 uint64_t end_freq_hz, uint64_t sample_rate_hz, SpectrumSamples* samples) :
     device_type_(device_type), device_id_(device_id), start_freq_hz_(start_freq_hz), end_freq_hz_(end_freq_hz),
@@ -27,8 +29,7 @@ sdr::SampleThread::SampleThread(const std::string& device_type, uint8_t device_i
     thread_ = nullptr;
     sweep_count_ = 0;
 
-    dwell_time_us_ = 2000000;
-    iterations_per_dwell_time_ = 4;
+    dwell_time_us_ = 500000;
 }
 
 sdr::SampleThread::~SampleThread()
@@ -80,66 +81,42 @@ void sdr::SampleThread::operator()()
 
     size_t vector_length = samples_->getFFTSize();
     uint64_t total_bw_hz = end_freq_hz_ - start_freq_hz_;
-    bool using_dummy_device = false;
 
     gr::top_block_sptr top_block;
-    gr::basic_block_sptr signal_src;
     osmosdr::source::sptr hardware_src;
-    gr::blocks::throttle::sptr throttle;
     gr::blocks::stream_to_vector::sptr stream_to_vec;
-    std::vector<float> blackman_window = gr::filter::firdes::window(gr::filter::firdes::WIN_BLACKMAN_HARRIS, vector_length /* # taps */, 6.67);
-//    std::vector<float> blackman_window = gr::filter::firdes::window(gr::filter::firdes::WIN_BLACKMAN_HARRIS, (2400000 / 8192) /* # taps */, 6.67);
-
     gr::fft::fft_vcc::sptr fft;
     gr::blocks::complex_to_mag_squared::sptr complex_to_mag2;
-    gr::blocks::probe_signal_vf::sptr probe;
-    gr::blocks::null_sink::sptr sink;
+    VectorSinkBlock::sptr vector_sink;
 
-    char top_block_name[64];
+    std::vector<float> blackman_window = gr::filter::firdes::window(gr::filter::firdes::WIN_BLACKMAN_HARRIS, vector_length /* # taps */, 6.67);
+
+    char top_block_name[64], vector_sink_name[64];
     snprintf(top_block_name, sizeof(top_block_name), "spectrum%lu", start_freq_hz_);
+    snprintf(vector_sink_name, sizeof(vector_sink_name), "vector_sink%lu", start_freq_hz_);
+
     top_block = gr::make_top_block(top_block_name);
 
-    if (device_type_.compare("dummy") == 0)
-    {
-        using_dummy_device = true;
-//      sample_rate_hz_ = total_bw_hz;
-        signal_src = gr::analog::sig_source_c::make(sample_rate_hz_, gr::analog::gr_waveform_t::GR_COS_WAVE, 1000, 1.0);
-        throttle = gr::blocks::throttle::make(sizeof(gr_complex), sample_rate_hz_);
-    }
-    else
-    {
-        char hardware_src_name[64];
-        snprintf(hardware_src_name, sizeof(hardware_src_name), "%s=%u", device_type_.c_str(), device_id_);
-        hardware_src = osmosdr::source::make(hardware_src_name);
+    char hardware_src_name[64];
+    snprintf(hardware_src_name, sizeof(hardware_src_name), "%s=%u", device_type_.c_str(), device_id_);
+    hardware_src = osmosdr::source::make(hardware_src_name);
 
-        hardware_src->set_sample_rate(sample_rate_hz_);
-        hardware_src->set_center_freq(start_freq_hz_);
-//      hardware_src->set_bandwidth();
-        hardware_src->set_gain_mode(false);     // disable AGC
-        hardware_src->set_gain(41.6);
-//      hardware_src->set_if_gain(20);
-    }
+    hardware_src->set_sample_rate(sample_rate_hz_);
+    hardware_src->set_center_freq(start_freq_hz_);
+//  hardware_src->set_bandwidth();
+    hardware_src->set_gain_mode(false);     // disable AGC
+    hardware_src->set_gain(41.6);
+//  hardware_src->set_if_gain(20);
 
     stream_to_vec = gr::blocks::stream_to_vector::make(sizeof(gr_complex), vector_length);
     fft = gr::fft::fft_vcc::make(vector_length, true, blackman_window, true);
     complex_to_mag2 = gr::blocks::complex_to_mag_squared::make(vector_length);
-    probe = gr::blocks::probe_signal_vf::make(vector_length);
-    sink = gr::blocks::null_sink::make(static_cast<unsigned int>(sizeof(gr_complex) / 2.0) * vector_length);
+    vector_sink = VectorSinkBlock::make(vector_sink_name, vector_length, samples_->getBinBandwidth(), samples_);
 
-    if (using_dummy_device)
-    {
-        top_block->connect(signal_src, 0, throttle, 0);
-        top_block->connect(throttle, 0, stream_to_vec, 0);
-    }
-    else
-    {
-        top_block->connect(hardware_src, 0, stream_to_vec, 0);
-    }
-
+    top_block->connect(hardware_src, 0, stream_to_vec, 0);
     top_block->connect(stream_to_vec, 0, fft, 0);
     top_block->connect(fft, 0, complex_to_mag2, 0);
-    top_block->connect(complex_to_mag2, 0, sink, 0);
-    top_block->connect(complex_to_mag2, 0, probe, 0);
+    top_block->connect(complex_to_mag2, 0, vector_sink, 0);
 
     top_block->start();
 
@@ -147,16 +124,16 @@ void sdr::SampleThread::operator()()
     std::cout << "Dividing total bandwidth of " << total_bw_hz << "Hz into " << slices << " slices (sample rate: " << sample_rate_hz_ << "Hz)" << std::endl;
 
     uint64_t start_slice_freq_hz = start_freq_hz_;
-    double bin_bw_hz = samples_->getBinBandwidth();
-    uint32_t dwell_time = dwell_time_us_ / iterations_per_dwell_time_;
 
     bool even_pass = true;
+    bool retune = true;
+
     while ( ! stop_)
     {
-        uint64_t tune_freq_hz, end_freq_hz, start_iteration_freq_hz;
-
-        if ( ! using_dummy_device)
+        if (retune)
         {
+            uint64_t tune_freq_hz, end_freq_hz, start_iteration_freq_hz;
+
             if (even_pass)
             {
                 // Tune to the center of the slice
@@ -171,51 +148,37 @@ void sdr::SampleThread::operator()()
                 end_freq_hz = static_cast<uint64_t>((end_freq_hz_ < (start_slice_freq_hz + (sample_rate_hz_ / 2.0))) ? end_freq_hz_ : (start_slice_freq_hz + (sample_rate_hz_ / 2.0)));
                 start_iteration_freq_hz = static_cast<uint64_t>(start_slice_freq_hz - (sample_rate_hz_ / 2.0));     // todo: watch for underrun
             }
+
+            double tuned_freq_hz = hardware_src->set_center_freq(tune_freq_hz);
+            usleep(100000);                                         // is this required?
+
+            vector_sink->setCurrentFrequencyRange(start_iteration_freq_hz, start_slice_freq_hz, end_freq_hz);
+            last_retuned_at_ = std::chrono::high_resolution_clock::now();
+
+            retune = false;
+
+            std::cout << "Tuned to " << tuned_freq_hz << "Hz (requested: " << tune_freq_hz << "Hz) for " << (even_pass ? "even" : "odd") << " scan from " << start_iteration_freq_hz << "Hz to " << end_freq_hz << "Hz (slice starts at " << start_slice_freq_hz << "Hz)" << std::endl;
         }
 
-//      std::cout << "Tuned to " << tune_freq_hz << "Hz for " << (even_pass ? "even" : "odd") << " scan from " << freq_hz << "Hz to " << end_freq_hz << "Hz (slice starts at " << start_slice_freq_hz << "Hz)" << std::endl;
+        // If our dwell time has elapsed, it's time to retune
+        auto t_now = std::chrono::high_resolution_clock::now();
+        float secs_since_last_retune = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - last_retuned_at_).count();
 
-        for (uint16_t i = 0; i < iterations_per_dwell_time_; i++)
+        if ((secs_since_last_retune * 1000000) > dwell_time_us_)
         {
-            uint64_t freq_hz = start_iteration_freq_hz;
+            vector_sink->setSaveSamples(false);             // don't update data while retuning
 
-            if ( ! using_dummy_device)
+            start_slice_freq_hz += sample_rate_hz_;
+            retune = true;
+
+            if (start_slice_freq_hz > end_freq_hz_)
             {
-                hardware_src->set_center_freq(tune_freq_hz);
+                start_slice_freq_hz = start_freq_hz_;
+                even_pass = ! even_pass;
+                sweep_count_++;
+
+                vector_sink->setSweepCount(sweep_count_);
             }
-
-            usleep(dwell_time);
-
-            // Scan from start of slice to end of slice (or earlier)
-            std::vector<float> scanned_amplitudes = probe->level();
-
-            for (float amplitude : scanned_amplitudes)
-            {
-                // Convert the raw amplitude to a normalised amplitude
-                //
-                // TODO: Add an adjustment for the Blackman window
-                float normalised_amplitude = (2.0f * sqrt(amplitude)) / vector_length;
-                float corrected_normalised_amplitude = 20.0f * (log(normalised_amplitude) / log(10.0f));
-
-                if (freq_hz >= start_slice_freq_hz)
-                {
-                    samples_->setLatestSample(freq_hz, corrected_normalised_amplitude, sweep_count_);
-                }
-
-                freq_hz += bin_bw_hz;
-                if (freq_hz > end_freq_hz)
-                {
-                    break;
-                }
-            }
-        }
-
-        start_slice_freq_hz += sample_rate_hz_;
-        if (start_slice_freq_hz > end_freq_hz_)
-        {
-            start_slice_freq_hz = start_freq_hz_;
-            even_pass = ! even_pass;
-            sweep_count_++;
         }
     }
 
