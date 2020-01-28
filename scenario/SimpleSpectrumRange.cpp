@@ -1,9 +1,9 @@
 #include "SimpleSpectrumRange.h"
 
-SimpleSpectrumRange::SimpleSpectrumRange(DisplayManager* display_manager, Primitive::Type type, uint64_t bin_id,
+SimpleSpectrumRange::SimpleSpectrumRange(DisplayManager* display_manager, Primitive::Type type, uint16_t slice_id, uint64_t bin_id,
                                          const glm::vec3& world_coords, const glm::vec3& colour,
                                          const std::vector<sdr::FrequencyBin const*>& frequency_bins) :
-        SceneObject(display_manager, type, world_coords, colour), frequency_bins_(frequency_bins), bin_id_(bin_id)
+        SceneObject(display_manager, type, world_coords, colour), slice_id_(slice_id), bin_id_(bin_id), frequency_bins_(frequency_bins)
 {
     amplitude_ = 0.0f;
 }
@@ -54,6 +54,14 @@ void SimpleSpectrumRange::draw(GLfloat secs_since_rendering_started, GLfloat sec
 
 void SimpleSpectrumRange::update(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame, void* context)
 {
+    uint16_t current_slice_id = *(reinterpret_cast<uint16_t*>(context));
+
+    // If this bin doesn't belong to the ring currently being rendered, exit early.
+    if (current_slice_id != slice_id_)
+    {
+        return;
+    }
+
     float amplitude = getAmplitude(true);
 
 //  float amplitude_shade = (1.0f / 50.0f) * amplitude;    // todo: restore me once amp / 2 is done

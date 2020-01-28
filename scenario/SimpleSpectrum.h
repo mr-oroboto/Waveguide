@@ -24,8 +24,12 @@ protected:
     void setBinHasBeenMarked(uint64_t bin_id);
     virtual void markBin(SimpleSpectrumRange* bin);
 
+    void resetState();
+
     sdr::SpectrumSampler* sampler_;
     sdr::SpectrumSamples* samples_;
+
+    bool set_initial_camera_;
 
     uint32_t bin_coalesce_factor_;
     float bin_width_;

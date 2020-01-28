@@ -12,6 +12,8 @@ public:
                        const std::vector<sdr::FrequencyBin const*>& frequency_bins);
     ~RotatedSpectrumRange();
 
+    void setEnableRotationAroundY(bool enabled);
+
     double getThetaOffset();
 
     virtual void draw(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame, bool use_colour = true);
@@ -23,6 +25,8 @@ private:
     double radius_;
     double theta_offset_;
     double rad_per_ring_;
+
+    bool rotate_around_y_;
 };
 
 #endif //WAVEGUIDE_SCENARIO_ROTATEDSPECTRUMRANGE_H

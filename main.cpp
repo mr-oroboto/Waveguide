@@ -9,6 +9,8 @@
 #include "scenario/grid/GridSpectrum.h"
 #include "scenario/sphere/SphereSpectrum.h"
 #include "scenario/circular/CircularSpectrum.h"
+#include "scenario/linear/LinearTimeSpectrum.h"
+#include "scenario/cylindrical/CylindricalSpectrum.h"
 
 #define WINDOW_FULLSCREEN false
 #define WINDOW_X_SIZE 2560
@@ -86,12 +88,11 @@ int main()
 
     scenarios.initialise(&window_manager);
 
-    /**
-     * TODO: Add time-sliced linear perspective and cyclindrical perspective.
-     */
     scenarios.addScenario(new GridSpectrum(display_manager, sampler, 100));
     scenarios.addScenario(new LinearSpectrum(display_manager, sampler, 1000));
+    scenarios.addScenario(new LinearTimeSpectrum(display_manager, sampler, 1000));
     scenarios.addScenario(new SphereSpectrum(display_manager, sampler, 600));
+    scenarios.addScenario(new CylindricalSpectrum(display_manager, sampler, 600));
     scenarios.addScenario(new CircularSpectrum(display_manager, sampler, 80));
 
     window_manager.setHandleKeystrokeCallback(std::bind(&handleKeystroke, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));

@@ -5,18 +5,30 @@
 SimpleSpectrum::SimpleSpectrum(DisplayManager *display_manager, sdr::SpectrumSampler *sampler, uint32_t bin_coalesce_factor)
         : Scenario(display_manager), sampler_(sampler), bin_coalesce_factor_(bin_coalesce_factor)
 {
+    assert(bin_coalesce_factor_ % 2 == 0);
+
     samples_ = sampler_->getSamples();
     bin_width_ = 0.5;
 
     max_markers_ = MARKER_REGIONS;
     current_markers_ = 0;
 
-    assert(bin_coalesce_factor_ % 2 == 0);
+    set_initial_camera_ = false;
 }
 
 SimpleSpectrum::~SimpleSpectrum()
 {
     std::cout << "SimpleSpectrum::~SimpleSpectrum()" << std::endl;
+}
+
+void SimpleSpectrum::resetState()
+{
+    coalesced_bins_.clear();
+    marked_bins_.clear();
+
+    current_markers_ = 0;
+
+    set_initial_camera_ = false;
 }
 
 bool SimpleSpectrum::getBinHasBeenMarked(uint64_t bin_id)

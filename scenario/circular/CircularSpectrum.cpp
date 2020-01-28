@@ -19,13 +19,8 @@ CircularSpectrum::~CircularSpectrum()
 
 void CircularSpectrum::run()
 {
-    /**
-     * 1. Create a new repeating FrameQueue
-     * 2. Create a single Frame that will be reused over and over
-     * 3. Place initial SceneObjects in the frame
-     * 4. Register a callback to be used to update SceneObjects
-     * 5. Run the FrameQueue
-     */
+    resetState();
+
     FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
     frame_queue->setFrameRate(1);
 

@@ -19,6 +19,8 @@ void LinearSpectrum::run()
      * 4. Register a callback to be used to update SceneObjects
      * 5. Run the FrameQueue
      */
+    resetState();
+
     FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
     frame_queue->setFrameRate(1);
 
@@ -45,7 +47,7 @@ void LinearSpectrum::run()
         glm::vec3 world_coords = start_coords;
         world_coords.x += (bin_id * bin_width_);
 
-        SimpleSpectrumRange* bin = new SimpleSpectrumRange(display_manager_, Primitive::Type::RECTANGLE, bin_id, world_coords, glm::vec3(1, 1, 1), frequency_bins);
+        SimpleSpectrumRange* bin = new SimpleSpectrumRange(display_manager_, Primitive::Type::RECTANGLE, 0, bin_id, world_coords, glm::vec3(1, 1, 1), frequency_bins);
         bin->setScale(bin_width_, 1.0, 1.0);
 
         coalesced_bins_.push_back(bin);
@@ -71,12 +73,14 @@ void LinearSpectrum::run()
 
 void LinearSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame)
 {
+    uint16_t current_slice = 0;
+
     if (samples_->getSweepCount() && current_markers_ < max_markers_)
     {
         markLocalMaxima();
     }
 
-    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, nullptr);
+    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, reinterpret_cast<void*>(&current_slice));
 }
 
 void LinearSpectrum::markBin(SimpleSpectrumRange* bin)

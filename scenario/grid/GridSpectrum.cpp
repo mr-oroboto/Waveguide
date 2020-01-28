@@ -3,7 +3,6 @@
 GridSpectrum::GridSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
         : SimpleSpectrum(display_manager, sampler, bin_coalesce_factor)
 {
-    set_initial_camera_ = false;
 }
 
 GridSpectrum::~GridSpectrum()
@@ -13,13 +12,8 @@ GridSpectrum::~GridSpectrum()
 
 void GridSpectrum::run()
 {
-    /**
-     * 1. Create a new repeating FrameQueue
-     * 2. Create a single Frame that will be reused over and over
-     * 3. Place initial SceneObjects in the frame
-     * 4. Register a callback to be used to update SceneObjects
-     * 5. Run the FrameQueue
-     */
+    resetState();
+
     FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
     frame_queue->setFrameRate(1);
 
@@ -46,7 +40,7 @@ void GridSpectrum::run()
         glm::vec3 world_coords = start_coords;
         world_coords.x += (bin_id % grid_width);
 
-        SimpleSpectrumRange* bin = new SimpleSpectrumRange(display_manager_, Primitive::Type::RECTANGLE, bin_id, world_coords, glm::vec3(1, 1, 1), frequency_bins);
+        SimpleSpectrumRange* bin = new SimpleSpectrumRange(display_manager_, Primitive::Type::RECTANGLE, 0, bin_id, world_coords, glm::vec3(1, 1, 1), frequency_bins);
 
         coalesced_bins_.push_back(bin);
         frame_->addObject(bin);
@@ -73,6 +67,8 @@ void GridSpectrum::run()
 
 void GridSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame)
 {
+    uint16_t current_slice = 0;
+
     if ( ! set_initial_camera_)
     {
         display_manager_->setCameraCoords(glm::vec3(-80, 20, 35));
@@ -85,7 +81,7 @@ void GridSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLf
         markLocalMaxima();
     }
 
-    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, nullptr);
+    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, reinterpret_cast<void*>(&current_slice));
 }
 
 void GridSpectrum::markBin(SimpleSpectrumRange* bin)
