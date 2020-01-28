@@ -1,21 +1,15 @@
 #include "SphereSpectrum.h"
 
-#include <iostream>
 #include <cmath>
 
 #include "scenario/RotatedSpectrumRange.h"
-#include "sdr/SpectrumSampler.h"
-#include "sdr/SpectrumSamples.h"
 
-SphereSpectrum::SphereSpectrum(DisplayManager *display_manager, sdr::SpectrumSampler *sampler, uint32_t bin_coalesce_factor)
-        : Scenario(display_manager), sampler_(sampler), bin_coalesce_factor_(bin_coalesce_factor)
+SphereSpectrum::SphereSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
+        : SimpleSpectrum(display_manager, sampler, bin_coalesce_factor)
 {
-    samples_ = sampler_->getSamples();
     radius_ = 8;
-    rings_ = 10;             // 10
+    rings_ = 10;
     current_ring_ = 0;
-
-    assert(bin_coalesce_factor_ % 2 == 0);
 }
 
 SphereSpectrum::~SphereSpectrum()
@@ -43,8 +37,8 @@ void SphereSpectrum::run()
 
     std::cout << "Coalescing " << raw_bin_count << " frequency bins into " << coalesced_bin_count << " visual bins" << std::endl;
 
-    double rad_per_bin = (2*M_PI) / coalesced_bin_count;            // each full spectrum band wraps once around the sphere
-    double rad_per_ring = ((170.0 / 180.0) * M_PI) / rings_;        // half of the sphere (a bit less than M_PI rad) can be used for history, otherwise bw/4 and 3bw/4 wrap into each other
+    double rad_per_bin = (2*M_PI) / (coalesced_bin_count * bin_width_);     // each full spectrum band wraps once around the sphere
+    double rad_per_ring = ((170.0 / 180.0) * M_PI) / rings_;                // half of the sphere (a bit less than M_PI rad) can be used for history, otherwise bw/4 and 3bw/4 wrap into each other
 
     glm::vec3 start_coords = glm::vec3(0, 0, 0);                    // initial co-ordinates of the sphere's center
 
@@ -60,7 +54,7 @@ void SphereSpectrum::run()
                 frequency_bins.push_back(samples_->getFrequencyBin(j));
             }
 
-            double theta = (rad_per_bin * bin_id);
+            double theta = (rad_per_bin * bin_id * bin_width_);
             glm::vec3 world_coords = start_coords;
 
             float x = radius_ * cos(theta);
@@ -80,12 +74,14 @@ void SphereSpectrum::run()
 
 //          bin = new RotatedSpectrumRange(display_manager_, Primitive::Type::CUBE, ring_id, bin_id, world_coords, theta, rad_per_ring, radius_, glm::vec3(1, 1, 1), frequency_bins);
             RotatedSpectrumRange* bin = new RotatedSpectrumRange(display_manager_, Primitive::Type::TRANSFORMING_RECTANGLE, ring_id, bin_id, world_coords, theta, rad_per_ring, radius_, glm::vec3(1, 1, 1), frequency_bins);
+            bin->setScale(bin_width_, 1, 1);
 
+            coalesced_bins_.push_back(bin);
             frame_->addObject(bin);
         }
     }
 
-    frame_->addText("Spherical Frequency Analysis", 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
+    frame_->addText("Spherical Perspective", 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
 
     frame_queue->enqueueFrame(frame_);  // @todo we should use a shared pointer so we also retain ownership
 
@@ -114,6 +110,5 @@ void SphereSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, G
     float camera_x = 80.0 * sin(secs_since_rendering_started * 0.1 * M_PI);
 
     display_manager_->setCameraCoords(glm::vec3(camera_x, 0, camera_z));
-//  display_manager_->setCameraPointingVector(glm::vec3(camera_x < 0 ? 1 : -1, 0, camera_z < 0 ? 1 : -1));
     display_manager_->setCameraPointingVector(glm::vec3(-camera_x, 0, -camera_z));
 }

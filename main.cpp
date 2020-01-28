@@ -86,8 +86,11 @@ int main()
 
     scenarios.initialise(&window_manager);
 
-    scenarios.addScenario(new LinearSpectrum(display_manager, sampler, 1000));
+    /**
+     * TODO: Add time-sliced linear perspective and cyclindrical perspective.
+     */
     scenarios.addScenario(new GridSpectrum(display_manager, sampler, 100));
+    scenarios.addScenario(new LinearSpectrum(display_manager, sampler, 1000));
     scenarios.addScenario(new SphereSpectrum(display_manager, sampler, 600));
     scenarios.addScenario(new CircularSpectrum(display_manager, sampler, 80));
 

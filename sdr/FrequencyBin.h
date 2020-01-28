@@ -15,7 +15,7 @@ namespace sdr {
 
         uint64_t getFrequency();
 
-        bool getHasBeenSet();
+        bool getHasBeenSet(uint32_t minimum_samples = 1);
         float getLatestAmplitude(bool moving_average = true);
         float getMaximumAmplitude();
 

@@ -1,21 +1,15 @@
 #include "CircularSpectrum.h"
 
-#include <iostream>
 #include <cmath>
 
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "scenario/RotatedSpectrumRange.h"
-#include "sdr/SpectrumSampler.h"
-#include "sdr/SpectrumSamples.h"
 
-CircularSpectrum::CircularSpectrum(DisplayManager *display_manager, sdr::SpectrumSampler *sampler, uint32_t bin_coalesce_factor)
-        : Scenario(display_manager), sampler_(sampler), bin_coalesce_factor_(bin_coalesce_factor)
+CircularSpectrum::CircularSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
+        : SimpleSpectrum(display_manager, sampler, bin_coalesce_factor)
 {
-    samples_ = sampler_->getSamples();
     radius_ = 8;
-
-    assert(bin_coalesce_factor_ % 2 == 0);
 }
 
 CircularSpectrum::~CircularSpectrum()
@@ -44,6 +38,7 @@ void CircularSpectrum::run()
 
     double rad_per_bin = (2*M_PI) / coalesced_bin_count;            // each full spectrum band wraps once around the sphere
 
+    uint64_t marker_spacing = coalesced_bin_count / 4;
     glm::vec3 start_coords = glm::vec3(0, 0, 0);                    // initial co-ordinates of the sphere's center
 
     for (uint64_t bin_id = 0; bin_id < coalesced_bin_count; bin_id++)
@@ -64,10 +59,19 @@ void CircularSpectrum::run()
 
         RotatedSpectrumRange* bin = new RotatedSpectrumRange(display_manager_, Primitive::Type::LINE, 0, bin_id, world_coords, theta, 0, radius_, glm::vec3(1, 1, 1), frequency_bins);
 
+        coalesced_bins_.push_back(bin);
         frame_->addObject(bin);
+
+        if ((bin_id % marker_spacing) == 0 && bin_id < coalesced_bin_count - 2)
+        {
+            char msg[64];
+            sprintf(msg, "%.3fMHz", const_cast<sdr::FrequencyBin*>(frequency_bins[0])->getFrequency() / 1000000.0f);
+            float text_y = world_coords.y > 0 ? world_coords.y - 2.0f : world_coords.y + 2.0f;
+            frame_->addText(msg, world_coords.x > 0 ? world_coords.x - 2.0f : world_coords.x + 2.0f, world_coords.y == 0 ? world_coords.y : text_y, world_coords.z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
+        }
     }
 
-    frame_->addText("Circular Frequency Analysis", 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
+    frame_->addText("Circular Perspective", 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
 
     frame_queue->enqueueFrame(frame_);  // @todo we should use a shared pointer so we also retain ownership
 
@@ -81,5 +85,23 @@ void CircularSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started,
 {
     uint16_t current_ring = 0;
 
+    if (samples_->getSweepCount() && current_markers_ < max_markers_)
+    {
+        markLocalMaxima();
+    }
+
     frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, reinterpret_cast<void*>(&current_ring));
+}
+
+void CircularSpectrum::markBin(SimpleSpectrumRange* bin)
+{
+    char msg[64];
+    sprintf(msg, "%.3fMHz", bin->getFrequency() / 1000000.0f);
+
+    float x = (radius_ + bin->getAmplitude() + 1.0) * cos(reinterpret_cast<RotatedSpectrumRange*>(bin)->getThetaOffset());
+    float y = (radius_ + bin->getAmplitude() + 1.0) * sin(reinterpret_cast<RotatedSpectrumRange*>(bin)->getThetaOffset());
+
+    frame_->addText(msg, x, y, bin->getPosition().z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
+
+    SimpleSpectrum::markBin(bin);
 }

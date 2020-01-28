@@ -26,12 +26,12 @@ uint64_t sdr::FrequencyBin::getFrequency()
     return freq_hz_;
 }
 
-bool sdr::FrequencyBin::getHasBeenSet()
+bool sdr::FrequencyBin::getHasBeenSet(uint32_t minimum_samples)
 {
     // Lock the sample data so that others don't read it from under us
     std::lock_guard<std::mutex> guard(lock_);
 
-    return ! ( ! has_rolled_over_ && next_sample_ == 0);
+    return has_rolled_over_ || next_sample_ >= minimum_samples;
 }
 
 float sdr::FrequencyBin::getLatestAmplitude(bool moving_average)

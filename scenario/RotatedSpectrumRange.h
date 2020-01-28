@@ -12,11 +12,12 @@ public:
                        const std::vector<sdr::FrequencyBin const*>& frequency_bins);
     ~RotatedSpectrumRange();
 
+    double getThetaOffset();
+
     virtual void draw(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame, bool use_colour = true);
     virtual void update(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame, void* context);
 
 private:
-    uint64_t bin_id_;
     uint16_t ring_id_;
 
     double radius_;

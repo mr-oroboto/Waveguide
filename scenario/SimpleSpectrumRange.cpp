@@ -1,18 +1,50 @@
 #include "SimpleSpectrumRange.h"
 
-SimpleSpectrumRange::SimpleSpectrumRange(DisplayManager* display_manager, Primitive::Type type, const glm::vec3& world_coords,
-                           const glm::vec3& colour, const std::vector<sdr::FrequencyBin const*>& frequency_bins) :
-        SceneObject(display_manager, type, world_coords, colour), frequency_bins_(frequency_bins)
+SimpleSpectrumRange::SimpleSpectrumRange(DisplayManager* display_manager, Primitive::Type type, uint64_t bin_id,
+                                         const glm::vec3& world_coords, const glm::vec3& colour,
+                                         const std::vector<sdr::FrequencyBin const*>& frequency_bins) :
+        SceneObject(display_manager, type, world_coords, colour), frequency_bins_(frequency_bins), bin_id_(bin_id)
 {
+    amplitude_ = 0.0f;
 }
 
 SimpleSpectrumRange::~SimpleSpectrumRange()
 {
 }
 
+float SimpleSpectrumRange::getAmplitude(bool refresh)
+{
+    if ( ! refresh)
+    {
+        return amplitude_;
+    }
+
+    float average_amplitude = 0.0f;
+    for (sdr::FrequencyBin const* bin : frequency_bins_)
+    {
+        average_amplitude += const_cast<sdr::FrequencyBin*>(bin)->getLatestAmplitude(true);
+    }
+
+    average_amplitude /= frequency_bins_.size();    // in dB
+    amplitude_ = average_amplitude + 100;           // offset so -100dB == 0 (ie. 30)
+    amplitude_ /= 2.0;                              // todo: remove me
+
+    return amplitude_;
+}
+
+uint64_t SimpleSpectrumRange::getFrequency()
+{
+    return const_cast<sdr::FrequencyBin*>(frequency_bins_[0])->getFrequency();
+}
+
+uint64_t SimpleSpectrumRange::getBinId()
+{
+    return bin_id_;
+}
+
 void SimpleSpectrumRange::draw(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame, bool use_colour)
 {
-    if ( ! const_cast<sdr::FrequencyBin*>(frequency_bins_[0])->getHasBeenSet())
+    if ( ! const_cast<sdr::FrequencyBin*>(frequency_bins_[0])->getHasBeenSet(2))
     {
         return;
     }
@@ -22,21 +54,12 @@ void SimpleSpectrumRange::draw(GLfloat secs_since_rendering_started, GLfloat sec
 
 void SimpleSpectrumRange::update(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame, void* context)
 {
-    float average_amplitude = 0.0f;
+    float amplitude = getAmplitude(true);
 
-    for (sdr::FrequencyBin const* bin : frequency_bins_)
-    {
-        average_amplitude += const_cast<sdr::FrequencyBin*>(bin)->getLatestAmplitude(true);
-    }
-
-    average_amplitude /= frequency_bins_.size();        // in dB
-    float adjusted_amplitude = average_amplitude + 100; // offset so -100dB == 0 (ie. 30)
-    adjusted_amplitude /= 2.0;                              // todo: remove me
-
-//  float amplitude_shade = (1.0f / 50.0f) * adjusted_amplitude;    // todo: restore me once amp / 2 is done
-    float amplitude_shade = (1.0f / 25.0f) * adjusted_amplitude;    // todo: restore me once amp / 2 is done
+//  float amplitude_shade = (1.0f / 50.0f) * amplitude;    // todo: restore me once amp / 2 is done
+    float amplitude_shade = (1.0f / 25.0f) * amplitude;    // todo: remove me once amp / 2 is done
     float r = amplitude_shade, g = amplitude_shade, b = 1;
 
-    this->setScale(this->scale_x_, adjusted_amplitude, this->scale_z_);
+    this->setScale(this->scale_x_, amplitude, this->scale_z_);
     this->setColour(glm::vec3(r, g, b));
 }

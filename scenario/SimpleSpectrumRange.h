@@ -9,14 +9,22 @@
 class SimpleSpectrumRange : public SceneObject
 {
 public:
-    SimpleSpectrumRange(DisplayManager* display_manager, Primitive::Type type, const glm::vec3& world_coords, const glm::vec3& colour, const std::vector<sdr::FrequencyBin const*>& frequency_bins);
+    SimpleSpectrumRange(DisplayManager* display_manager, Primitive::Type type, uint64_t bin_id, const glm::vec3& world_coords, const glm::vec3& colour, const std::vector<sdr::FrequencyBin const*>& frequency_bins);
     virtual ~SimpleSpectrumRange();
 
     virtual void draw(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame, bool use_colour = true);
     virtual void update(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame, void* context);
 
+    float getAmplitude(bool refresh = false);
+
+    uint64_t getFrequency();
+    uint64_t getBinId();
+
 protected:
     std::vector<sdr::FrequencyBin const*> frequency_bins_;
+
+    uint64_t bin_id_;
+    float amplitude_;
 };
 
 #endif //WAVEGUIDE_SCENARIO_SIMPLESPECTRUMRANGE_H
