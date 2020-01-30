@@ -16,6 +16,8 @@ protected:
 
     size_t screen_x_res_;
     size_t screen_y_res_;
+
+    static std::vector<std::string> options_;
 };
 
 #endif //WAVEGUIDE_SCENARIO_HELP_H

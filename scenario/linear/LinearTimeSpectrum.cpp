@@ -1,7 +1,7 @@
 #include "LinearTimeSpectrum.h"
 
-LinearTimeSpectrum::LinearTimeSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
-        : SimpleSpectrum(display_manager, sampler, bin_coalesce_factor)
+LinearTimeSpectrum::LinearTimeSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
+        : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
     slices_ = 0;
     current_slice_ = 0;
@@ -10,12 +10,13 @@ LinearTimeSpectrum::LinearTimeSpectrum(DisplayManager* display_manager, sdr::Spe
 
 LinearTimeSpectrum::~LinearTimeSpectrum()
 {
-    std::cout << "LinearTimeSpectrum::~LinearTimeSpectrum()" << std::endl;
 }
 
 void LinearTimeSpectrum::run()
 {
     resetState();
+
+    display_manager_->setPerspective(0.1f, 100.0f, 45.0f);
 
     FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
     frame_queue->setFrameRate(1);
@@ -39,8 +40,8 @@ void LinearTimeSpectrum::updateSceneCallback(GLfloat secs_since_rendering_starte
 {
     if ( ! set_initial_camera_)
     {
-        display_manager_->setCameraCoords(glm::vec3(-50, 10, 35));
-        display_manager_->setCameraPointingVector(glm::vec3(1, 0, -1.0));
+        window_manager_->setCameraCoords(glm::vec3(-50, 10, 35));
+        window_manager_->setCameraPointingVector(glm::vec3(1, 0, -1.0));
         set_initial_camera_ = true;
     }
 
@@ -58,7 +59,7 @@ void LinearTimeSpectrum::updateSceneCallback(GLfloat secs_since_rendering_starte
 //        markLocalMaxima();
 //    }
 
-    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, reinterpret_cast<void*>(&current_slice_));
+    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, static_cast<void*>(&current_slice_));
 }
 
 void LinearTimeSpectrum::addSpectrumRanges(uint16_t slice_id, GLfloat secs_since_framequeue_started)

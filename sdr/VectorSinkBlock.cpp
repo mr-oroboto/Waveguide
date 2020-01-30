@@ -8,13 +8,10 @@ sdr::VectorSinkBlock::VectorSinkBlock(std::string name, size_t vector_length, do
 {
     save_samples_ = false;
     sweep_count_ = 0;
-
-    std::cout << "sdr::VectorSinkBlock::VectorSinkBlock()" << std::endl;
 }
 
 sdr::VectorSinkBlock::~VectorSinkBlock()
 {
-    std::cout << "sdr::VectorSinkBlock::~VectorSinkBlock()" << std::endl;
 }
 
 sdr::VectorSinkBlock::sptr sdr::VectorSinkBlock::make(std::string block_name, size_t vector_length, double bin_bw_hz, SpectrumSamples* samples)
@@ -26,7 +23,7 @@ int sdr::VectorSinkBlock::general_work(int noutput_items, gr_vector_int &ninput_
                                        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     int vector_count = ninput_items[0];
-    const float* vectors = reinterpret_cast<const float*>(input_items[0]);
+    const float* vectors = static_cast<const float*>(input_items[0]);
 
     if (save_samples_)
     {

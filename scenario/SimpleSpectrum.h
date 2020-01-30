@@ -13,8 +13,11 @@
 class SimpleSpectrum : public Scenario
 {
 public:
-    SimpleSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
+    SimpleSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
     virtual ~SimpleSpectrum();
+
+    uint32_t getCoalesceFactor();
+    void setCoalesceFactor(uint32_t coalesce_factor);
 
 protected:
     virtual void updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame) = 0;
@@ -25,6 +28,8 @@ protected:
     virtual void markBin(SimpleSpectrumRange* bin);
 
     void resetState();
+
+    WindowManager* window_manager_;
 
     sdr::SpectrumSampler* sampler_;
     sdr::SpectrumSamples* samples_;

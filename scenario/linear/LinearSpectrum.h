@@ -6,7 +6,7 @@
 class LinearSpectrum : public SimpleSpectrum
 {
 public:
-    LinearSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
+    LinearSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
     ~LinearSpectrum();
 
     void run();

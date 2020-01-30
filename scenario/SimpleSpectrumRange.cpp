@@ -54,7 +54,7 @@ void SimpleSpectrumRange::draw(GLfloat secs_since_rendering_started, GLfloat sec
 
 void SimpleSpectrumRange::update(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame, void* context)
 {
-    uint16_t current_slice_id = *(reinterpret_cast<uint16_t*>(context));
+    uint16_t current_slice_id = *(static_cast<uint16_t*>(context));
 
     // If this bin doesn't belong to the ring currently being rendered, exit early.
     if (current_slice_id != slice_id_)

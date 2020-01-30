@@ -6,7 +6,7 @@
 class LinearTimeSpectrum : public SimpleSpectrum
 {
 public:
-    LinearTimeSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
+    LinearTimeSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
     ~LinearTimeSpectrum();
 
     void run();

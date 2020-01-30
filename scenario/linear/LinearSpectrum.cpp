@@ -1,13 +1,12 @@
 #include "LinearSpectrum.h"
 
-LinearSpectrum::LinearSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
-        : SimpleSpectrum(display_manager, sampler, bin_coalesce_factor)
+LinearSpectrum::LinearSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
+        : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
 }
 
 LinearSpectrum::~LinearSpectrum()
 {
-    std::cout << "LinearSpectrum::~LinearSpectrum()" << std::endl;
 }
 
 void LinearSpectrum::run()
@@ -20,6 +19,8 @@ void LinearSpectrum::run()
      * 5. Run the FrameQueue
      */
     resetState();
+
+    display_manager_->setPerspective(0.1f, 100.0f, 45.0f);
 
     FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
     frame_queue->setFrameRate(1);
@@ -80,7 +81,7 @@ void LinearSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, G
         markLocalMaxima();
     }
 
-    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, reinterpret_cast<void*>(&current_slice));
+    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, static_cast<void*>(&current_slice));
 }
 
 void LinearSpectrum::markBin(SimpleSpectrumRange* bin)

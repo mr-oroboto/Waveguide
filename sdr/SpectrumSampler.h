@@ -8,11 +8,13 @@
 #include "SampleThread.h"
 #include "SpectrumSamples.h"
 
+class Config;
+
 namespace sdr {
 
     class SpectrumSampler {
     public:
-        SpectrumSampler(uint8_t device_count, uint64_t capture_device_sample_rate_hz);
+        SpectrumSampler(Config* config);
         ~SpectrumSampler();
 
         bool start(uint64_t start_freq_hz, uint64_t end_freq_hz);
@@ -21,6 +23,8 @@ namespace sdr {
         SpectrumSamples* getSamples();
 
     private:
+        Config* config_;
+
         uint8_t device_count_;             // number of devices to split the total bandwidth over
         uint64_t capture_device_sample_rate_hz_;
 

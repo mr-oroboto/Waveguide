@@ -2,11 +2,10 @@
 
 #define MARKER_REGIONS 8
 
-SimpleSpectrum::SimpleSpectrum(DisplayManager *display_manager, sdr::SpectrumSampler *sampler, uint32_t bin_coalesce_factor)
-        : Scenario(display_manager), sampler_(sampler), bin_coalesce_factor_(bin_coalesce_factor)
+SimpleSpectrum::SimpleSpectrum(WindowManager *window_manager, sdr::SpectrumSampler *sampler, uint32_t bin_coalesce_factor)
+        : Scenario(window_manager->getDisplayManager()),
+          window_manager_(window_manager), sampler_(sampler), bin_coalesce_factor_(bin_coalesce_factor)
 {
-    assert(bin_coalesce_factor_ % 2 == 0);
-
     samples_ = sampler_->getSamples();
     bin_width_ = 0.5;
 
@@ -18,7 +17,6 @@ SimpleSpectrum::SimpleSpectrum(DisplayManager *display_manager, sdr::SpectrumSam
 
 SimpleSpectrum::~SimpleSpectrum()
 {
-    std::cout << "SimpleSpectrum::~SimpleSpectrum()" << std::endl;
 }
 
 void SimpleSpectrum::resetState()
@@ -29,6 +27,23 @@ void SimpleSpectrum::resetState()
     current_markers_ = 0;
 
     set_initial_camera_ = false;
+}
+
+uint32_t SimpleSpectrum::getCoalesceFactor()
+{
+    return bin_coalesce_factor_;
+}
+
+void SimpleSpectrum::setCoalesceFactor(uint32_t coalesce_factor)
+{
+    if (coalesce_factor == 0)
+    {
+        return;
+    }
+
+    std::cout << "Set bin coalesce factor to " << coalesce_factor << std::endl;
+
+    bin_coalesce_factor_ = coalesce_factor;
 }
 
 bool SimpleSpectrum::getBinHasBeenMarked(uint64_t bin_id)

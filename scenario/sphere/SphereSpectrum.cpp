@@ -4,8 +4,8 @@
 
 #include "scenario/RotatedSpectrumRange.h"
 
-SphereSpectrum::SphereSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
-        : SimpleSpectrum(display_manager, sampler, bin_coalesce_factor)
+SphereSpectrum::SphereSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
+        : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
     radius_ = 8;
     rings_ = 10;
@@ -14,12 +14,13 @@ SphereSpectrum::SphereSpectrum(DisplayManager* display_manager, sdr::SpectrumSam
 
 SphereSpectrum::~SphereSpectrum()
 {
-    std::cout << "SphereSpectrum::~SphereSpectrum()" << std::endl;
 }
 
 void SphereSpectrum::run()
 {
     resetState();
+
+    display_manager_->setPerspective(0.1f, 100.0f, 45.0f);
 
     FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
     frame_queue->setFrameRate(1);
@@ -88,7 +89,7 @@ void SphereSpectrum::run()
 
 void SphereSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame)
 {
-    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, reinterpret_cast<void*>(&current_ring_));
+    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, static_cast<void*>(&current_ring_));
 
     // If the samplers have completed a new full sweep of the spectrum, move onto the next ring
     if (samples_->getSweepCount() != current_sweep_)
@@ -104,6 +105,6 @@ void SphereSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, G
     float camera_z = 80.0 * cos(secs_since_rendering_started * 0.1 * M_PI);
     float camera_x = 80.0 * sin(secs_since_rendering_started * 0.1 * M_PI);
 
-    display_manager_->setCameraCoords(glm::vec3(camera_x, 0, camera_z));
-    display_manager_->setCameraPointingVector(glm::vec3(-camera_x, 0, -camera_z));
+    window_manager_->setCameraCoords(glm::vec3(camera_x, 0, camera_z));
+    window_manager_->setCameraPointingVector(glm::vec3(-camera_x, 0, -camera_z));
 }

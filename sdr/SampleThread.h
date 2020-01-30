@@ -8,12 +8,13 @@
 
 #include "SpectrumSamples.h"
 
+class Config;
+
 namespace sdr {
 
     class SampleThread {
     public:
-        SampleThread(const std::string& device_type, uint8_t device_id, uint64_t start_freq_hz, uint64_t end_freq_hz,
-                     uint64_t sample_rate_hz, SpectrumSamples* samples_);
+        SampleThread(Config* config, uint8_t device_id, uint64_t start_freq_hz, uint64_t end_freq_hz, SpectrumSamples* samples_);
         ~SampleThread();
 
         void operator()();
@@ -22,6 +23,7 @@ namespace sdr {
 
     private:
         std::thread* thread_;
+        Config* config_;
         SpectrumSamples* samples_;
 
         std::string device_type_;

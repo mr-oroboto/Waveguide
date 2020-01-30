@@ -6,20 +6,22 @@
 
 #include "scenario/RotatedSpectrumRange.h"
 
-CircularSpectrum::CircularSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
-        : SimpleSpectrum(display_manager, sampler, bin_coalesce_factor)
+CircularSpectrum::CircularSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
+        : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
     radius_ = 8;
+    max_markers_ = 12;
 }
 
 CircularSpectrum::~CircularSpectrum()
 {
-    std::cout << "CircularSpectrum::~CircularSpectrum()" << std::endl;
 }
 
 void CircularSpectrum::run()
 {
     resetState();
+
+    display_manager_->setPerspective(0.1, 130.0, 45);
 
     FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
     frame_queue->setFrameRate(1);
@@ -85,7 +87,7 @@ void CircularSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started,
         markLocalMaxima();
     }
 
-    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, reinterpret_cast<void*>(&current_ring));
+    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, static_cast<void*>(&current_ring));
 }
 
 void CircularSpectrum::markBin(SimpleSpectrumRange* bin)
@@ -93,8 +95,8 @@ void CircularSpectrum::markBin(SimpleSpectrumRange* bin)
     char msg[64];
     sprintf(msg, "%.3fMHz", bin->getFrequency() / 1000000.0f);
 
-    float x = (radius_ + bin->getAmplitude() + 1.0) * cos(reinterpret_cast<RotatedSpectrumRange*>(bin)->getThetaOffset());
-    float y = (radius_ + bin->getAmplitude() + 1.0) * sin(reinterpret_cast<RotatedSpectrumRange*>(bin)->getThetaOffset());
+    float x = (radius_ + bin->getAmplitude() + 1.0) * cos(dynamic_cast<RotatedSpectrumRange*>(bin)->getThetaOffset());
+    float y = (radius_ + bin->getAmplitude() + 1.0) * sin(dynamic_cast<RotatedSpectrumRange*>(bin)->getThetaOffset());
 
     frame_->addText(msg, x, y, bin->getPosition().z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
 

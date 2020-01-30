@@ -6,7 +6,7 @@
 class SphereSpectrum : public SimpleSpectrum
 {
 public:
-    SphereSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
+    SphereSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
     ~SphereSpectrum();
 
     void run();

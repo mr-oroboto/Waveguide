@@ -30,8 +30,6 @@ sdr::SpectrumSamples::SpectrumSamples(uint64_t start_freq_hz, uint64_t end_freq_
         bins_.push_back(new FrequencyBin(bin_start_freq_hz, HISTORY_SIZE));
         bin_start_freq_hz += bin_bw_hz_;
     }
-
-    std::cout << "Allocated " << bins_.size() << " total bins" << std::endl;
 }
 
 sdr::SpectrumSamples::~SpectrumSamples()

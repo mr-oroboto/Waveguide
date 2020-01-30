@@ -1,18 +1,19 @@
 #include "GridSpectrum.h"
 
-GridSpectrum::GridSpectrum(DisplayManager* display_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
-        : SimpleSpectrum(display_manager, sampler, bin_coalesce_factor)
+GridSpectrum::GridSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
+        : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
 }
 
 GridSpectrum::~GridSpectrum()
 {
-    std::cout << "GridSpectrum::~GridSpectrum()" << std::endl;
 }
 
 void GridSpectrum::run()
 {
     resetState();
+
+    display_manager_->setPerspective(0.1, 100.0, 90);
 
     FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
     frame_queue->setFrameRate(1);
@@ -71,8 +72,8 @@ void GridSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLf
 
     if ( ! set_initial_camera_)
     {
-        display_manager_->setCameraCoords(glm::vec3(-80, 20, 35));
-        display_manager_->setCameraPointingVector(glm::vec3(1, 0, -1.0));
+        window_manager_->setCameraCoords(glm::vec3(-55, 20, 25));
+        window_manager_->setCameraPointingVector(glm::vec3(1, 0, -1.0));
         set_initial_camera_ = true;
     }
 
@@ -81,7 +82,7 @@ void GridSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLf
         markLocalMaxima();
     }
 
-    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, reinterpret_cast<void*>(&current_slice));
+    frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, static_cast<void*>(&current_slice));
 }
 
 void GridSpectrum::markBin(SimpleSpectrumRange* bin)

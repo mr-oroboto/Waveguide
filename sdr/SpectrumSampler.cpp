@@ -4,9 +4,14 @@
 #include <cassert>
 #include <cmath>
 
-sdr::SpectrumSampler::SpectrumSampler(uint8_t device_count, uint64_t capture_device_sample_rate_hz) :
-    device_count_(device_count), capture_device_sample_rate_hz_(capture_device_sample_rate_hz)
+#include "Config.h"
+
+sdr::SpectrumSampler::SpectrumSampler(Config* config) :
+    config_(config)
 {
+    device_count_ = config->getDeviceCount();
+    capture_device_sample_rate_hz_ = config->getSampleRate();
+
     assert(device_count_ >= 1);
 
     sample_threads_.clear();
@@ -15,7 +20,6 @@ sdr::SpectrumSampler::SpectrumSampler(uint8_t device_count, uint64_t capture_dev
 
 sdr::SpectrumSampler::~SpectrumSampler()
 {
-    std::cout << "SpectrumSampler::~SpectrumSampler()" << std::endl;
     stop();
 }
 
@@ -62,7 +66,7 @@ bool sdr::SpectrumSampler::start(uint64_t start_freq_hz, uint64_t end_freq_hz)
 
     for (uint8_t i = 0; i < device_count_; i++)
     {
-        SampleThread* thread = new SampleThread("rtl", i, device_start_freq_hz, device_start_freq_hz + bw_per_device_hz, capture_device_sample_rate_hz_, samples_);
+        SampleThread* thread = new SampleThread(config_, i, device_start_freq_hz, device_start_freq_hz + bw_per_device_hz, samples_);
         sample_threads_.push_back(thread);
 
         thread->start();
