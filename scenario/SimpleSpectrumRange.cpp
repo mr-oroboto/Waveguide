@@ -6,6 +6,7 @@ SimpleSpectrumRange::SimpleSpectrumRange(DisplayManager* display_manager, Primit
         SceneObject(display_manager, type, world_coords, colour), slice_id_(slice_id), bin_id_(bin_id), frequency_bins_(frequency_bins)
 {
     amplitude_ = 0.0f;
+    picked_ = false;
 }
 
 SimpleSpectrumRange::~SimpleSpectrumRange()
@@ -69,5 +70,13 @@ void SimpleSpectrumRange::update(GLfloat secs_since_rendering_started, GLfloat s
     float r = amplitude_shade, g = amplitude_shade, b = 1;
 
     this->setScale(this->scale_x_, amplitude, this->scale_z_);
-    this->setColour(glm::vec3(r, g, b));
+
+    if (picked_)
+    {
+        this->setColour(glm::vec3(1.0f, 1.0f, 0.0f));
+    }
+    else
+    {
+        this->setColour(glm::vec3(r, g, b));
+    }
 }

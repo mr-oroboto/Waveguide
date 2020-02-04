@@ -55,5 +55,7 @@ std::vector<std::string> Help::options_ = {
         "[]: Reduce / increase FFT resolution",
         "wsaf: Move camera forward / backward / left / right",
         "arrows: Point camera in different direction (can also use mouse)",
+        "mouse: Select frequency range for zooming (in linear view only)",
+        "u: Undo last zoom",
         "q: Quit"
 };

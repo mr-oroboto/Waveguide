@@ -1,8 +1,13 @@
+#include <scenario/SimpleSpectrum.h>
 #include "LinearSpectrum.h"
 
 LinearSpectrum::LinearSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
         : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
+    start_picking_bin_ = nullptr;
+    last_picked_bin_ = nullptr;
+
+    max_freq_markers_ = 4;
 }
 
 LinearSpectrum::~LinearSpectrum()
@@ -20,19 +25,20 @@ void LinearSpectrum::run()
      */
     resetState();
 
+    window_manager_->setHandleMouseCallback(std::bind(&LinearSpectrum::handleMouse, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     display_manager_->setPerspective(0.1f, 100.0f, 45.0f);
 
     FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
     frame_queue->setFrameRate(1);
 
-    frame_ = frame_queue->newFrame();
+    frame_ = frame_queue->newFrame(false);
 
     uint64_t raw_bin_count = samples_->getBinCount();
     uint64_t coalesced_bin_count = (raw_bin_count + bin_coalesce_factor_ - 1) / bin_coalesce_factor_; // integer ceiling
 
     std::cout << "Coalescing " << raw_bin_count << " frequency bins into " << coalesced_bin_count << " visual bins" << std::endl;
 
-    uint64_t marker_spacing = coalesced_bin_count / 4;
+    uint64_t marker_spacing = coalesced_bin_count / max_freq_markers_;
     glm::vec3 start_coords = glm::vec3(-1.0f * ((coalesced_bin_count * bin_width_) / 2.0f), 0, 0);
 
     for (uint64_t bin_id = 0; bin_id < coalesced_bin_count; bin_id++)
@@ -91,5 +97,86 @@ void LinearSpectrum::markBin(SimpleSpectrumRange* bin)
     frame_->addText(msg, bin->getPosition().x, bin->getAmplitude() + 0.2f, bin->getPosition().z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
 
     SimpleSpectrum::markBin(bin);
+}
+
+bool LinearSpectrum::handleMouse(WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop)
+{
+    if (mouse_event.type == SDL_MOUSEBUTTONDOWN && mouse_event.button.button == SDL_BUTTON_LEFT)
+    {
+        start_picking_bin_ = findFirstIntersectedBin(mouse_event.motion.x, mouse_event.motion.y);
+        last_picked_bin_ = nullptr;
+
+        if (start_picking_bin_)
+        {
+            markPickedBins(start_picking_bin_);
+            return false;
+        }
+    }
+    else if (start_picking_bin_ && mouse_event.type == SDL_MOUSEMOTION)
+    {
+        SimpleSpectrumRange* end_picking_bin = findFirstIntersectedBin(mouse_event.motion.x, mouse_event.motion.y);
+
+        if (end_picking_bin)
+        {
+            markPickedBins(end_picking_bin);
+            return false;
+        }
+    }
+    else if (start_picking_bin_ && mouse_event.type == SDL_MOUSEBUTTONUP)
+    {
+        if (last_picked_bin_ && last_picked_bin_ != start_picking_bin_)
+        {
+            // Save the current range so we can return to it
+            ZoomRange current_range = {
+                    sampler_->getStartFrequency(),
+                    sampler_->getEndFrequency()
+            };
+            previous_zoom_ranges_.push(current_range);
+
+            uint64_t start_freq_hz = start_picking_bin_->getBinId() < last_picked_bin_->getBinId() ? start_picking_bin_->getFrequency() : last_picked_bin_->getFrequency();
+            uint64_t end_freq_hz = start_picking_bin_->getBinId() < last_picked_bin_->getBinId() ? last_picked_bin_->getFrequency() : start_picking_bin_->getFrequency();
+
+            max_freq_markers_ = 2;
+
+            retune(start_freq_hz, end_freq_hz, true);
+        }
+
+        start_picking_bin_ = nullptr;
+        last_picked_bin_ = nullptr;
+    }
+
+    return true;
+}
+
+SimpleSpectrumRange* LinearSpectrum::findFirstIntersectedBin(GLuint mouse_x, GLuint mouse_y)
+{
+    glm::vec3 ray_start_coords = window_manager_->getDisplayManager()->getCameraCoords();
+
+    /**
+     * NOTE: This is a terrible and naive intersection test, please improve it.
+     */
+    for (SimpleSpectrumRange* bin : coalesced_bins_)
+    {
+        glm::vec3 pos = bin->getPosition();
+        glm::vec3 scale = bin->getScale();
+
+        glm::vec3 top = pos, bottom = pos, left = pos, right = pos;
+        top.y += scale.y / 2.0f;
+        bottom.y -= scale.y / 2.0f;
+        left -= scale.x / 2.0f;
+        right += scale.x / 2.0f;
+
+        // What is the length of the ray from the camera to the object's center?
+        GLfloat len = glm::length(pos - display_manager_->getCameraCoords());
+
+        glm::vec3 ray_end_coords = ray_start_coords + (window_manager_->getDisplayManager()->getRayFromCamera(mouse_x, mouse_y) * len);
+
+        if (ray_end_coords.x >= left.x && ray_end_coords.x <= right.x && ray_end_coords.y <= top.y && ray_end_coords.y >= bottom.y)
+        {
+            return bin;
+        }
+    }
+
+    return nullptr;
 }
 

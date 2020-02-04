@@ -11,6 +11,7 @@ CircularSpectrum::CircularSpectrum(WindowManager* window_manager, sdr::SpectrumS
 {
     radius_ = 8;
     max_markers_ = 12;
+    max_freq_markers_ = 4;
 }
 
 CircularSpectrum::~CircularSpectrum()
@@ -35,7 +36,7 @@ void CircularSpectrum::run()
 
     double rad_per_bin = (2*M_PI) / coalesced_bin_count;            // each full spectrum band wraps once around the sphere
 
-    uint64_t marker_spacing = coalesced_bin_count / 4;
+    uint64_t marker_spacing = coalesced_bin_count / max_freq_markers_;
     glm::vec3 start_coords = glm::vec3(0, 0, 0);                    // initial co-ordinates of the sphere's center
 
     for (uint64_t bin_id = 0; bin_id < coalesced_bin_count; bin_id++)

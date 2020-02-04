@@ -20,6 +20,8 @@ public:
     uint64_t getFrequency();
     uint64_t getBinId();
 
+    void setPicked(bool p) { picked_ = p; }
+
 protected:
     std::vector<sdr::FrequencyBin const*> frequency_bins_;
 
@@ -27,6 +29,8 @@ protected:
     uint64_t bin_id_;
 
     float amplitude_;
+
+    bool picked_;
 };
 
 #endif //WAVEGUIDE_SCENARIO_SIMPLESPECTRUMRANGE_H

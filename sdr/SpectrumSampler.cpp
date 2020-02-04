@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include <boost/thread/exceptions.hpp>
 
 #include "Config.h"
 
@@ -58,6 +59,9 @@ bool sdr::SpectrumSampler::start(uint64_t start_freq_hz, uint64_t end_freq_hz)
         return false;
     }
 
+    start_freq_hz_ = start_freq_hz;
+    end_freq_hz_ = end_freq_hz;
+
     samples_ = new SpectrumSamples(start_freq_hz, end_freq_hz, capture_device_sample_rate_hz_);
 
     uint64_t total_bw_hz = end_freq_hz - start_freq_hz;
@@ -75,4 +79,14 @@ bool sdr::SpectrumSampler::start(uint64_t start_freq_hz, uint64_t end_freq_hz)
     }
 
     return true;
+}
+
+uint64_t sdr::SpectrumSampler::getStartFrequency()
+{
+    return start_freq_hz_;
+}
+
+uint64_t sdr::SpectrumSampler::getEndFrequency()
+{
+    return end_freq_hz_;
 }

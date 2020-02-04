@@ -13,7 +13,11 @@ public:
 
 private:
     void updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame);
+    bool handleMouse(WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop);
+
     void markBin(SimpleSpectrumRange* bin);
+
+    SimpleSpectrumRange* findFirstIntersectedBin(GLuint mouse_x, GLuint mouse_y);
 };
 
 

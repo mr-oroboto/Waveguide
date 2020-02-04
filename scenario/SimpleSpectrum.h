@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <unordered_set>
+#include <stack>
 
 #include <scenario/SimpleSpectrumRange.h>
 
@@ -19,13 +20,25 @@ public:
     uint32_t getCoalesceFactor();
     void setCoalesceFactor(uint32_t coalesce_factor);
 
+    virtual void undoLastZoom();
+    void retune(uint64_t start_freq_hz, uint64_t end_freq_hz, bool zooming_in);
+
 protected:
+    typedef struct
+    {
+        uint64_t start_freq_hz_;
+        uint64_t end_freq_hz_;
+    } ZoomRange;
+
     virtual void updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame) = 0;
+    virtual bool handleMouse(WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop);
 
     void markLocalMaxima();
     bool getBinHasBeenMarked(uint64_t bin_id);
     void setBinHasBeenMarked(uint64_t bin_id);
     virtual void markBin(SimpleSpectrumRange* bin);
+
+    virtual void markPickedBins(SimpleSpectrumRange* end_picking_bin);
 
     void resetState();
 
@@ -42,9 +55,14 @@ protected:
     Frame* frame_;
     std::vector<SimpleSpectrumRange*> coalesced_bins_;
 
-    uint64_t max_markers_;
+    uint64_t max_freq_markers_;                         // bin frequency markers
+    uint64_t max_markers_;                              // high amplitude markers
     uint64_t current_markers_;
     std::unordered_set<uint64_t> marked_bins_;
+
+    SimpleSpectrumRange* start_picking_bin_;
+    SimpleSpectrumRange* last_picked_bin_;
+    std::stack<ZoomRange> previous_zoom_ranges_;
 };
 
 #endif //WAVEGUIDE_SCENARIO_SIMPLESPECTRUM_H

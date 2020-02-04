@@ -61,6 +61,11 @@ bool handleKeystroke(WindowManager* window_manager, SDL_Event keystroke_event, G
             case SDLK_LEFTBRACKET:
                 adjustCoalesceFactors(true);
                 break;
+
+            case SDLK_u:
+                SimpleSpectrum* scenario = dynamic_cast<SimpleSpectrum*>(scenarios.getCurrentScenario());
+                scenario->undoLastZoom();
+                break;
         }
     }
 

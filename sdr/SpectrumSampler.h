@@ -20,6 +20,9 @@ namespace sdr {
         bool start(uint64_t start_freq_hz, uint64_t end_freq_hz);
         void stop();
 
+        uint64_t getStartFrequency();
+        uint64_t getEndFrequency();
+
         SpectrumSamples* getSamples();
 
     private:
@@ -27,6 +30,8 @@ namespace sdr {
 
         uint8_t device_count_;             // number of devices to split the total bandwidth over
         uint64_t capture_device_sample_rate_hz_;
+        uint64_t start_freq_hz_;
+        uint64_t end_freq_hz_;
 
         std::vector<SampleThread*> sample_threads_;
         SpectrumSamples* samples_;

@@ -180,6 +180,7 @@ void sdr::SampleThread::operator()()
     }
 
     top_block->stop();
+    top_block->wait();
 
     std::cout << "Sample thread on " << start_freq_hz_ << "Hz is exiting" << std::endl;
 }
