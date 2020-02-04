@@ -26,7 +26,9 @@ void LinearTimeSpectrum::run()
     current_sweep_ = samples_->getSweepCount();
     addSpectrumRanges(0, 0);
 
-    frame_->addText("Linear Time Sliced Perspective", 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
+    char msg[128];
+    snprintf(msg, sizeof(msg), "Linear Time Sliced Perspective (%.3fMhz - %.3fMhz)", sampler_->getStartFrequency() / 1000000.0f, sampler_->getEndFrequency() / 1000000.0f);
+    frame_->addText(msg, 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
 
     frame_queue->enqueueFrame(frame_);  // @todo we should use a shared pointer so we also retain ownership
 
@@ -97,13 +99,13 @@ void LinearTimeSpectrum::addSpectrumRanges(uint16_t slice_id, GLfloat secs_since
 
             if (slice_id == 0)
             {
-                sprintf(msg, "%.3fMHz", const_cast<sdr::FrequencyBin*>(frequency_bins[0])->getFrequency() / 1000000.0f);
+                snprintf(msg, sizeof(msg), "%.3fMHz", const_cast<sdr::FrequencyBin*>(frequency_bins[0])->getFrequency() / 1000000.0f);
                 frame_->addText(msg, world_coords.x, -2.0f, world_coords.z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
             }
 
             if (bin_id == 0)
             {
-                sprintf(msg, "t = %.2f sec", secs_since_framequeue_started);
+                snprintf(msg, sizeof(msg), "t = %.2f sec", secs_since_framequeue_started);
                 frame_->addText(msg, world_coords.x - 5.0f, -2.0f, world_coords.z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
             }
         }
@@ -113,7 +115,7 @@ void LinearTimeSpectrum::addSpectrumRanges(uint16_t slice_id, GLfloat secs_since
 void LinearTimeSpectrum::markBin(SimpleSpectrumRange* bin)
 {
     char msg[64];
-    sprintf(msg, "%.3fMHz", bin->getFrequency() / 1000000.0f);
+    snprintf(msg, sizeof(msg), "%.3fMHz", bin->getFrequency() / 1000000.0f);
     frame_->addText(msg, bin->getPosition().x, bin->getAmplitude() + 0.2f, bin->getPosition().z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
 
     SimpleSpectrum::markBin(bin);

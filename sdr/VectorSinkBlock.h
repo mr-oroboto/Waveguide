@@ -12,7 +12,6 @@ namespace sdr {
     class VectorSinkBlock : public gr::block {
     public:
         VectorSinkBlock(std::string block_name, size_t vector_length, double bin_bw_hz, SpectrumSamples* samples);
-
         virtual ~VectorSinkBlock();
 
         typedef boost::shared_ptr<VectorSinkBlock> sptr;

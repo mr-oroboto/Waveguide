@@ -5,9 +5,8 @@
 #include <cmath>
 
 #define FFT_SIZE 8192
-#define HISTORY_SIZE 16
 
-sdr::SpectrumSamples::SpectrumSamples(uint64_t start_freq_hz, uint64_t end_freq_hz, uint64_t capture_sample_rate_hz) :
+sdr::SpectrumSamples::SpectrumSamples(uint64_t start_freq_hz, uint64_t end_freq_hz, uint64_t capture_sample_rate_hz, uint16_t history_size) :
         start_freq_hz_(start_freq_hz), end_freq_hz_(end_freq_hz), capture_sample_rate_hz_(capture_sample_rate_hz)
 {
     fft_size_ = FFT_SIZE;
@@ -27,7 +26,7 @@ sdr::SpectrumSamples::SpectrumSamples(uint64_t start_freq_hz, uint64_t end_freq_
     uint64_t bin_start_freq_hz = start_freq_hz_;
     for (uint64_t i = 0; i < bin_count; i++)
     {
-        bins_.push_back(new FrequencyBin(bin_start_freq_hz, HISTORY_SIZE));
+        bins_.push_back(new FrequencyBin(bin_start_freq_hz, history_size));
         bin_start_freq_hz += bin_bw_hz_;
     }
 }

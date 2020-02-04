@@ -149,7 +149,7 @@ void sdr::SampleThread::operator()()
             }
 
             double tuned_freq_hz = hardware_src->set_center_freq(tune_freq_hz);
-            usleep(100000);                                         // is this required?
+//            usleep(100000);                                         // is this required?
 
             vector_sink->setCurrentFrequencyRange(start_iteration_freq_hz, start_slice_freq_hz, end_freq_hz);
             last_retuned_at_ = std::chrono::high_resolution_clock::now();

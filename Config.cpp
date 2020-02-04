@@ -9,9 +9,12 @@ Config::Config(int argc, char** argv)
 
     start_frequency_ = 88000000;
     end_frequency_ = 108000000;
+
     sample_rate_ = 2400000;
     dwell_time_ = 500000;
-    gain_ = 10.0f;
+
+    gain_ = 41.6f;
+    averaging_window_ = 3;
 
     argp_parse(&parser_, argc, argv, 0, 0, this);
 
@@ -46,6 +49,9 @@ error_t Config::parse(int key, char* arg)
             break;
         case 'c':
             device_count_ = static_cast<uint8_t>(strtoul(arg, NULL, 10));
+            break;
+        case 'w':
+            averaging_window_ = static_cast<uint16_t>(strtoul(arg, NULL, 10));
             break;
 
         default:
@@ -113,6 +119,11 @@ float Config::getGain()
     return gain_;
 }
 
+uint16_t Config::getAveragingWindow()
+{
+    return averaging_window_;
+}
+
 argp Config::parser_ = {
         options_,
         parse_argument,
@@ -124,8 +135,9 @@ argp_option Config::options_[] = {
         {"start", 's', "FREQUENCY", 0, "Start scanning at this frequency in Hz (default 88000000 (88Mhz))", 0},
         {"end", 'e', "FREQUENCY", 0, "End scanning at this frequency in Hz (default 108000000 (108Mhz)", 0},
         {"sample_rate", 'r', "RATE", 0, "Hardware sample rate in Hz (default 2400000Hz (2.4Mhz))", 1},
+        {"averaging_window", 'w', "COUNT", 0, "Number of samples to average FFT measurements over", 1},
         {"dwell", 'd', "USEC", 0, "Dwell time per sampling slice in usec (default 500000 (0.5 sec))", 1},
-        {"gain", 'g', "DB", 0, "Hardware gain (default 10.0)", 1},
+        {"gain", 'g', "DB", 0, "Hardware gain (default 41.6)", 1},
         {"device_count", 'c', "COUNT", 0, "Use this many hardware devices to scan range (default 1)", 1},
         0
 };

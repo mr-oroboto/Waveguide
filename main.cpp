@@ -41,6 +41,7 @@ void adjustCoalesceFactors(bool increase)
 bool handleKeystroke(WindowManager* window_manager, SDL_Event keystroke_event, GLfloat secs_since_last_renderloop)
 {
     bool continue_processing_keystrokes = true;
+    SimpleSpectrum* scenario = dynamic_cast<SimpleSpectrum*>(scenarios.getCurrentScenario());
 
     if (keystroke_event.type == SDL_KEYDOWN)
     {
@@ -63,8 +64,11 @@ bool handleKeystroke(WindowManager* window_manager, SDL_Event keystroke_event, G
                 break;
 
             case SDLK_u:
-                SimpleSpectrum* scenario = dynamic_cast<SimpleSpectrum*>(scenarios.getCurrentScenario());
                 scenario->undoLastZoom();
+                break;
+
+            case SDLK_c:
+                scenario->clearMarkedBins();
                 break;
         }
     }

@@ -53,9 +53,10 @@ std::vector<std::string> Help::options_ = {
         "h: This help screen",
         "n: Cycle to next perspective",
         "[]: Reduce / increase FFT resolution",
-        "wsaf: Move camera forward / backward / left / right",
-        "arrows: Point camera in different direction (can also use mouse)",
+        "c: Clear max amplitude markers",
         "mouse: Select frequency range for zooming (in linear view only)",
         "u: Undo last zoom",
+        "wsaf: Move camera forward / backward / left / right",
+        "arrows: Point camera in different direction (can also use mouse)",
         "q: Quit"
 };

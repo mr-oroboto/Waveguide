@@ -22,13 +22,13 @@ SimpleSpectrum::~SimpleSpectrum()
 
 void SimpleSpectrum::resetState()
 {
+    frame_ = nullptr;
+    
     window_manager_->setHandleMouseCallback(nullptr);
     samples_ = sampler_->getSamples();
 
     coalesced_bins_.clear();
-    marked_bins_.clear();
-
-    current_markers_ = 0;
+    clearMarkedBins();
 
     set_initial_camera_ = false;
 }
@@ -48,6 +48,14 @@ void SimpleSpectrum::setCoalesceFactor(uint32_t coalesce_factor)
     std::cout << "Set bin coalesce factor to " << coalesce_factor << std::endl;
 
     bin_coalesce_factor_ = coalesce_factor;
+
+    clearMarkedBins();
+}
+
+void SimpleSpectrum::clearMarkedBins()
+{
+    marked_bins_.clear();
+    current_markers_ = 0;
 }
 
 bool SimpleSpectrum::getBinHasBeenMarked(uint64_t bin_id)

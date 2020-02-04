@@ -19,6 +19,7 @@ public:
 
     uint32_t getCoalesceFactor();
     void setCoalesceFactor(uint32_t coalesce_factor);
+    virtual void clearMarkedBins();
 
     virtual void undoLastZoom();
     void retune(uint64_t start_freq_hz, uint64_t end_freq_hz, bool zooming_in);

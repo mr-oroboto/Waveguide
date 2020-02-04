@@ -69,6 +69,8 @@ void sdr::VectorSinkBlock::updateSamples(const float* scanned_amplitudes)
         // Convert the raw amplitude to a normalised amplitude
         //
         // TODO: Add an adjustment for the Blackman window
+        // TODO: Normalise across all FFTs, not just this one
+
         float normalised_amplitude = (2.0f * sqrt(amplitude)) / vector_length_;
         float corrected_normalised_amplitude = 20.0f * (log(normalised_amplitude) / log(10.0f));
 

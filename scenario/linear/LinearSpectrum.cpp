@@ -63,12 +63,14 @@ void LinearSpectrum::run()
         if (bin_id % marker_spacing == 0)
         {
             char msg[64];
-            sprintf(msg, "%.3fMHz", const_cast<sdr::FrequencyBin*>(frequency_bins[0])->getFrequency() / 1000000.0f);
+            snprintf(msg, sizeof(msg), "%.3fMHz", const_cast<sdr::FrequencyBin*>(frequency_bins[0])->getFrequency() / 1000000.0f);
             frame_->addText(msg, world_coords.x, -2.0f, world_coords.z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
         }
     }
 
-    frame_->addText("Linear Perspective", 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
+    char msg[128];
+    snprintf(msg, sizeof(msg), "Linear Perspective (%.3fMhz - %.3fMhz)", sampler_->getStartFrequency() / 1000000.0f, sampler_->getEndFrequency() / 1000000.0f);
+    frame_->addText(msg, 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
 
     frame_queue->enqueueFrame(frame_);  // @todo we should use a shared pointer so we also retain ownership
 
@@ -90,11 +92,29 @@ void LinearSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, G
     frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, static_cast<void*>(&current_slice));
 }
 
+void LinearSpectrum::clearMarkedBins()
+{
+    if (frame_ == nullptr)
+    {
+        return;
+    }
+
+    for (unsigned long i : marked_bin_text_ids_)
+    {
+        frame_->deleteText(i);
+    }
+
+    marked_bin_text_ids_.clear();
+    SimpleSpectrum::clearMarkedBins();
+}
+
 void LinearSpectrum::markBin(SimpleSpectrumRange* bin)
 {
     char msg[64];
-    sprintf(msg, "%.3fMHz", bin->getFrequency() / 1000000.0f);
-    frame_->addText(msg, bin->getPosition().x, bin->getAmplitude() + 0.2f, bin->getPosition().z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
+    snprintf(msg, sizeof(msg), "%.3fMHz", bin->getFrequency() / 1000000.0f);
+    unsigned long text_id = frame_->addText(msg, bin->getPosition().x, bin->getAmplitude() + 0.2f, bin->getPosition().z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
+
+    marked_bin_text_ids_.push_back(text_id);
 
     SimpleSpectrum::markBin(bin);
 }

@@ -49,14 +49,16 @@ void GridSpectrum::run()
         if (bin_id != 0 && (bin_id % grid_width) == 0)
         {
             char msg[64];
-            sprintf(msg, "%.2fMHz", const_cast<sdr::FrequencyBin*>(frequency_bins[0])->getFrequency() / 1000000.0f);
+            snprintf(msg, sizeof(msg), "%.2fMHz", const_cast<sdr::FrequencyBin*>(frequency_bins[0])->getFrequency() / 1000000.0f);
             frame_->addText(msg, world_coords.x - 5.0f, 0.0f, world_coords.z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
 
             start_coords.z -= 1.0f;
         }
     }
 
-    frame_->addText("Grid Perspective", 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
+    char msg[128];
+    snprintf(msg, sizeof(msg), "Grid Perspective (%.3fMhz - %.3fMhz)", sampler_->getStartFrequency() / 1000000.0f, sampler_->getEndFrequency() / 1000000.0f);
+    frame_->addText(msg, 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
 
     frame_queue->enqueueFrame(frame_);  // @todo we should use a shared pointer so we also retain ownership
 
@@ -88,8 +90,26 @@ void GridSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLf
 void GridSpectrum::markBin(SimpleSpectrumRange* bin)
 {
     char msg[64];
-    sprintf(msg, "%.3fMHz", bin->getFrequency() / 1000000.0f);
-    frame_->addText(msg, bin->getPosition().x, bin->getAmplitude() + 0.2f, bin->getPosition().z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
+    snprintf(msg, sizeof(msg), "%.3fMHz", bin->getFrequency() / 1000000.0f);
+    unsigned long text_id = frame_->addText(msg, bin->getPosition().x, bin->getAmplitude() + 0.2f, bin->getPosition().z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
+
+    marked_bin_text_ids_.push_back(text_id);
 
     SimpleSpectrum::markBin(bin);
+}
+
+void GridSpectrum::clearMarkedBins()
+{
+    if (frame_ == nullptr)
+    {
+        return;
+    }
+
+    for (unsigned long i : marked_bin_text_ids_)
+    {
+        frame_->deleteText(i);
+    }
+
+    marked_bin_text_ids_.clear();
+    SimpleSpectrum::clearMarkedBins();
 }

@@ -62,7 +62,7 @@ bool sdr::SpectrumSampler::start(uint64_t start_freq_hz, uint64_t end_freq_hz)
     start_freq_hz_ = start_freq_hz;
     end_freq_hz_ = end_freq_hz;
 
-    samples_ = new SpectrumSamples(start_freq_hz, end_freq_hz, capture_device_sample_rate_hz_);
+    samples_ = new SpectrumSamples(start_freq_hz, end_freq_hz, capture_device_sample_rate_hz_, config_->getAveragingWindow());
 
     uint64_t total_bw_hz = end_freq_hz - start_freq_hz;
     uint64_t bw_per_device_hz = static_cast<uint64_t>(ceil(total_bw_hz / static_cast<float>(device_count_)));        // may be > capture_device_sample_rate_hz_

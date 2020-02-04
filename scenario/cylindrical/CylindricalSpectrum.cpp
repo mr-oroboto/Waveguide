@@ -32,7 +32,9 @@ void CylindricalSpectrum::run()
     current_sweep_ = samples_->getSweepCount();
     addSpectrumRanges(0, 0);
 
-    frame_->addText("Cylindrical Time Sliced Perspective", 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
+    char msg[128];
+    snprintf(msg, sizeof(msg), "Cylindrical Time Sliced Perspective (%.3fMhz - %.3fMhz)", sampler_->getStartFrequency() / 1000000.0f, sampler_->getEndFrequency() / 1000000.0f);
+    frame_->addText(msg, 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
 
     frame_queue->enqueueFrame(frame_);  // @todo we should use a shared pointer so we also retain ownership
 

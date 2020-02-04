@@ -13,7 +13,7 @@ namespace sdr {
 
     class SpectrumSamples {
     public:
-        SpectrumSamples(uint64_t start_freq_hz, uint64_t end_freq_hz, uint64_t capture_sample_rate_hz);
+        SpectrumSamples(uint64_t start_freq_hz, uint64_t end_freq_hz, uint64_t capture_sample_rate_hz, uint16_t history_size);
         ~SpectrumSamples();
 
         float getLatestAmplitude(uint64_t freq_hz, bool moving_average = true);

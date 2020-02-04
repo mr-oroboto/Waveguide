@@ -10,6 +10,7 @@ public:
     ~LinearSpectrum();
 
     void run();
+    void clearMarkedBins();
 
 private:
     void updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame);
@@ -18,6 +19,8 @@ private:
     void markBin(SimpleSpectrumRange* bin);
 
     SimpleSpectrumRange* findFirstIntersectedBin(GLuint mouse_x, GLuint mouse_y);
+
+    std::vector<unsigned long> marked_bin_text_ids_;
 };
 
 
