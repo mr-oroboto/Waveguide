@@ -28,6 +28,7 @@ namespace sdr {
                                  gr_vector_void_star &output_items);
 
         void updateSamples(const float *scanned_amplitudes);
+        uint64_t getBinFrequency(size_t bin_id);
 
         size_t vector_length_;
 
