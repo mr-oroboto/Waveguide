@@ -62,25 +62,14 @@ void sdr::VectorSinkBlock::updateSamples(const float* scanned_amplitudes)
 {
     for (size_t i = 0; i < vector_length_; i++)
     {
+        // TODO: Normalise the amplitude across all FFTs, not just this one
         float amplitude = scanned_amplitudes[i];
 
-        // Convert the raw amplitude to a normalised amplitude
-        //
-        // TODO: Add an adjustment for the Blackman window
-        // TODO: Normalise across all FFTs, not just this one
-
-        float normalised_amplitude = (2.0f * sqrt(amplitude)) / vector_length_;
-        float corrected_normalised_amplitude = 20.0f * (log(normalised_amplitude) / log(10.0f));
-
         uint64_t freq_hz = getBinFrequency(i);
-        
+
         if (freq_hz >= start_freq_hz_ && freq_hz <= end_freq_hz_)
         {
-            samples_->setLatestSample(freq_hz, corrected_normalised_amplitude, sweep_count_);
-        }
-        else if (freq_hz > end_freq_hz_)
-        {
-            break;
+            samples_->setLatestSample(freq_hz, amplitude, sweep_count_);
         }
     }
 }
@@ -92,16 +81,5 @@ void sdr::VectorSinkBlock::updateSamples(const float* scanned_amplitudes)
  */
 uint64_t sdr::VectorSinkBlock::getBinFrequency(size_t bin_id)
 {
-    size_t translated_bin_id;
-
-    if (bin_id < (vector_length_ / 2))
-    {
-        translated_bin_id = bin_id + (vector_length_ / 2);  // ie. 0 == 4096 (center frequency)
-    }
-    else
-    {
-        translated_bin_id = bin_id - (vector_length_ / 2);  // ie. 4096 == 0 (start of FFT)
-    }
-
-    return start_fft_freq_hz_ + static_cast<uint64_t>(translated_bin_id * bin_bw_hz_);
+    return start_fft_freq_hz_ + static_cast<uint64_t>(bin_id * bin_bw_hz_);
 }

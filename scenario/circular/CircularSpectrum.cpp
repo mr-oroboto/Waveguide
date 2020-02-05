@@ -38,6 +38,10 @@ void CircularSpectrum::run()
 
     uint64_t marker_spacing = coalesced_bin_count / max_freq_markers_;
     glm::vec3 start_coords = glm::vec3(0, 0, 0);                    // initial co-ordinates of the sphere's center
+    if (marker_spacing == 0)
+    {
+        marker_spacing = 2;
+    }
 
     for (uint64_t bin_id = 0; bin_id < coalesced_bin_count; bin_id++)
     {

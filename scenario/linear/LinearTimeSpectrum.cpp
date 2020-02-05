@@ -73,6 +73,10 @@ void LinearTimeSpectrum::addSpectrumRanges(uint16_t slice_id, GLfloat secs_since
 
     uint64_t marker_spacing = coalesced_bin_count / 4;
     glm::vec3 start_coords = glm::vec3(-1.0f * ((coalesced_bin_count * bin_width_) / 2.0f), 0, -1.0 * slice_id);
+    if (marker_spacing == 0)
+    {
+        marker_spacing = 2;
+    }
 
     for (uint64_t bin_id = 0; bin_id < coalesced_bin_count; bin_id++)
     {

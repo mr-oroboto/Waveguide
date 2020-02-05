@@ -18,6 +18,7 @@
 #include <gnuradio/fft/fft_vcc.h>
 #include <gnuradio/filter/firdes.h>
 #include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/filter/single_pole_iir_filter_ff.h>
 #include <osmosdr/source.h>
 
 #include "Config.h"
@@ -87,6 +88,8 @@ void sdr::SampleThread::operator()()
     gr::blocks::stream_to_vector::sptr stream_to_vec;
     gr::fft::fft_vcc::sptr fft;
     gr::blocks::complex_to_mag_squared::sptr complex_to_mag2;
+    gr::filter::single_pole_iir_filter_ff::sptr iir;
+    gr::blocks::nlog10_ff::sptr vector_log;
     VectorSinkBlock::sptr vector_sink;
 
     std::vector<float> blackman_window = gr::filter::firdes::window(gr::filter::firdes::WIN_BLACKMAN_HARRIS, vector_length /* # taps */, 6.67);
@@ -102,20 +105,32 @@ void sdr::SampleThread::operator()()
     hardware_src = osmosdr::source::make(hardware_src_name);
 
     hardware_src->set_sample_rate(sample_rate_hz_);
-    hardware_src->set_center_freq(start_freq_hz_);
-    hardware_src->set_gain_mode(false);     // disable AGC
+//    hardware_src->set_center_freq(start_freq_hz_);
+    hardware_src->set_freq_corr(0.0);
+    hardware_src->set_gain_mode(false);         // disable AGC
     hardware_src->set_gain(config_->getGain());
+    hardware_src->set_dc_offset_mode(0);        // disable DC spike removal
 //  hardware_src->set_if_gain(20);
+
+    float window_power = 0.0f;
+    for (float tap : blackman_window)
+    {
+        window_power += tap*tap;
+    }
 
     stream_to_vec = gr::blocks::stream_to_vector::make(sizeof(gr_complex), vector_length);
     fft = gr::fft::fft_vcc::make(vector_length, true, blackman_window, true);
     complex_to_mag2 = gr::blocks::complex_to_mag_squared::make(vector_length);
+    iir = gr::filter::single_pole_iir_filter_ff::make(1.0, vector_length);
+    vector_log = gr::blocks::nlog10_ff::make(10, vector_length, -20 * log10(vector_length) - 10 * log10(window_power / vector_length));
     vector_sink = VectorSinkBlock::make(vector_sink_name, vector_length, samples_->getBinBandwidth(), samples_);
 
     top_block->connect(hardware_src, 0, stream_to_vec, 0);
     top_block->connect(stream_to_vec, 0, fft, 0);
     top_block->connect(fft, 0, complex_to_mag2, 0);
-    top_block->connect(complex_to_mag2, 0, vector_sink, 0);
+    top_block->connect(complex_to_mag2, 0, iir, 0);
+    top_block->connect(iir, 0, vector_log, 0);
+    top_block->connect(vector_log, 0, vector_sink, 0);
 
     top_block->start();
 
@@ -135,9 +150,9 @@ void sdr::SampleThread::operator()()
             uint64_t start_slice_freq_hz = start_fft_freq_hz >= start_freq_hz_ ? start_fft_freq_hz : start_freq_hz_;
             uint64_t end_slice_freq_hz = end_fft_freq_hz <= end_freq_hz_ ? end_fft_freq_hz : end_freq_hz_;
 
-//            std::cout << "Slice: " << slice_id << ", tuned to " << tune_freq_hz << "Hz (FFT: " << start_fft_freq_hz << ", " << end_fft_freq_hz << ") (Slice: " << start_slice_freq_hz << ", " << end_slice_freq_hz << ")" << std::endl;
+//          std::cout << "Slice: " << slice_id << ", tuned to " << tune_freq_hz << "Hz (FFT: " << start_fft_freq_hz << ", " << end_fft_freq_hz << ") (Slice: " << start_slice_freq_hz << ", " << end_slice_freq_hz << ")" << std::endl;
             double tuned_freq_hz = hardware_src->set_center_freq(tune_freq_hz);
-//            usleep(100000);                                         // is this required?
+//          usleep(100000);                                         // is this required?
 
             vector_sink->setCurrentFrequencyRange(start_fft_freq_hz, start_slice_freq_hz, end_slice_freq_hz);
             last_retuned_at_ = std::chrono::high_resolution_clock::now();

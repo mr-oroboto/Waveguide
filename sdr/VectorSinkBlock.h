@@ -33,7 +33,7 @@ namespace sdr {
         size_t vector_length_;
 
         SpectrumSamples *samples_;
-        bool save_samples_;                 // samples should be actively saved when received
+        volatile bool save_samples_;        // samples should be actively saved when received
 
         uint64_t start_fft_freq_hz_;        // the FFT runs from this frequency to this + sample rate
         uint64_t start_freq_hz_;            // sample bins at or past this frequency

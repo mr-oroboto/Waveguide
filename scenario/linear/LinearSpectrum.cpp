@@ -40,6 +40,10 @@ void LinearSpectrum::run()
 
     uint64_t marker_spacing = coalesced_bin_count / max_freq_markers_;
     glm::vec3 start_coords = glm::vec3(-1.0f * ((coalesced_bin_count * bin_width_) / 2.0f), 0, 0);
+    if (marker_spacing == 0)
+    {
+        marker_spacing = 2;
+    }
 
     for (uint64_t bin_id = 0; bin_id < coalesced_bin_count; bin_id++)
     {

@@ -35,6 +35,11 @@ float SimpleSpectrumRange::getAmplitude(bool refresh)
 
 uint64_t SimpleSpectrumRange::getFrequency()
 {
+    if (frequency_bins_.size() / 2)
+    {
+        return const_cast<sdr::FrequencyBin*>(frequency_bins_[frequency_bins_.size() / 2])->getFrequency();
+    }
+
     return const_cast<sdr::FrequencyBin*>(frequency_bins_[0])->getFrequency();
 }
 
