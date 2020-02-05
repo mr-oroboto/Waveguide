@@ -39,9 +39,9 @@ int sdr::VectorSinkBlock::general_work(int noutput_items, gr_vector_int &ninput_
     return 0;
 }
 
-void sdr::VectorSinkBlock::setCurrentFrequencyRange(uint64_t first_bin_freq_hz, uint64_t start_freq_hz, uint64_t end_freq_hz)
+void sdr::VectorSinkBlock::setCurrentFrequencyRange(uint64_t start_fft_freq_hz, uint64_t start_freq_hz, uint64_t end_freq_hz)
 {
-    first_bin_freq_hz_ = first_bin_freq_hz;
+    start_fft_freq_hz_ = start_fft_freq_hz;
     start_freq_hz_ = start_freq_hz;
     end_freq_hz_ = end_freq_hz;
 
@@ -60,7 +60,7 @@ void sdr::VectorSinkBlock::setSweepCount(uint64_t sweep_count)
 
 void sdr::VectorSinkBlock::updateSamples(const float* scanned_amplitudes)
 {
-    uint64_t freq_hz = first_bin_freq_hz_;
+    uint64_t freq_hz = start_fft_freq_hz_;
 
     for (size_t i = 0; i < vector_length_; i++)
     {

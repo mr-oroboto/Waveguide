@@ -119,42 +119,31 @@ void sdr::SampleThread::operator()()
 
     top_block->start();
 
-    uint64_t slices = static_cast<uint64_t>(ceil(total_bw_hz / static_cast<long double>(sample_rate_hz_)));
-    std::cout << "Dividing allocated device bandwidth of " << total_bw_hz << "Hz into " << slices << " slices" << std::endl;
-
-    uint64_t start_slice_freq_hz = start_freq_hz_;
-
-    bool even_pass = true;
+    uint64_t tune_freq_hz = start_freq_hz_;
+    uint32_t slice_id = 0;
     bool retune = true;
 
     while ( ! stop_)
     {
         if (retune)
         {
-            uint64_t tune_freq_hz, end_freq_hz, start_iteration_freq_hz;
+            // The FFT straddles the center tuning frequency
+            uint64_t start_fft_freq_hz = static_cast<uint64_t>(tune_freq_hz - (sample_rate_hz_ / 2.0));  // TODO: watch for underrun
+            uint64_t end_fft_freq_hz = static_cast<uint64_t>(tune_freq_hz + (sample_rate_hz_ / 2.0));
 
-            if (even_pass)
-            {
-                // Tune to the center of the slice
-                tune_freq_hz = static_cast<uint64_t>(start_slice_freq_hz + (sample_rate_hz_ / 2.0));
-                end_freq_hz = (end_freq_hz_ < (start_slice_freq_hz + sample_rate_hz_)) ? end_freq_hz_ : (start_slice_freq_hz + sample_rate_hz_);
-                start_iteration_freq_hz = start_slice_freq_hz;
-            }
-            else
-            {
-                // Tune to the start of the slice
-                tune_freq_hz = start_slice_freq_hz;
-                end_freq_hz = static_cast<uint64_t>((end_freq_hz_ < (start_slice_freq_hz + (sample_rate_hz_ / 2.0))) ? end_freq_hz_ : (start_slice_freq_hz + (sample_rate_hz_ / 2.0)));
-                start_iteration_freq_hz = static_cast<uint64_t>(start_slice_freq_hz - (sample_rate_hz_ / 2.0));     // todo: watch for underrun
-            }
+            // But the range we're scanning is sometimes smaller (at the first and last slice)
+            uint64_t start_slice_freq_hz = start_fft_freq_hz >= start_freq_hz_ ? start_fft_freq_hz : start_freq_hz_;
+            uint64_t end_slice_freq_hz = end_fft_freq_hz <= end_freq_hz_ ? end_fft_freq_hz : end_freq_hz_;
 
+//            std::cout << "Slice: " << slice_id << ", tuned to " << tune_freq_hz << "Hz (FFT: " << start_fft_freq_hz << ", " << end_fft_freq_hz << ") (Slice: " << start_slice_freq_hz << ", " << end_slice_freq_hz << ")" << std::endl;
             double tuned_freq_hz = hardware_src->set_center_freq(tune_freq_hz);
 //            usleep(100000);                                         // is this required?
 
-            vector_sink->setCurrentFrequencyRange(start_iteration_freq_hz, start_slice_freq_hz, end_freq_hz);
+            vector_sink->setCurrentFrequencyRange(start_fft_freq_hz, start_slice_freq_hz, end_slice_freq_hz);
             last_retuned_at_ = std::chrono::high_resolution_clock::now();
 
             retune = false;
+            slice_id++;
         }
 
         // If our dwell time has elapsed, it's time to retune
@@ -165,13 +154,13 @@ void sdr::SampleThread::operator()()
         {
             vector_sink->setSaveSamples(false);             // don't update data while retuning
 
-            start_slice_freq_hz += sample_rate_hz_;
+            tune_freq_hz += sample_rate_hz_ / 2.0;
             retune = true;
 
-            if (start_slice_freq_hz > end_freq_hz_)
+            if ((tune_freq_hz - (sample_rate_hz_ / 2.0)) > end_freq_hz_)
             {
-                start_slice_freq_hz = start_freq_hz_;
-                even_pass = ! even_pass;
+                tune_freq_hz = start_freq_hz_;
+                slice_id = 0;
                 sweep_count_++;
 
                 vector_sink->setSweepCount(sweep_count_);

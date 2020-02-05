@@ -18,7 +18,7 @@ namespace sdr {
 
         static sptr make(std::string block_name, size_t vector_length, double bin_bw_hz, SpectrumSamples* samples);
 
-        void setCurrentFrequencyRange(uint64_t first_bin_freq_hz, uint64_t start_freq_hz, uint64_t end_freq_hz);
+        void setCurrentFrequencyRange(uint64_t start_fft_freq_hz, uint64_t start_freq_hz, uint64_t end_freq_hz);
 
         void setSaveSamples(bool save_samples);
         void setSweepCount(uint64_t sweep_count);
@@ -34,7 +34,7 @@ namespace sdr {
         SpectrumSamples *samples_;
         bool save_samples_;                 // samples should be actively saved when received
 
-        uint64_t first_bin_freq_hz_;        // the first bin of the FFT corresponds to this frequency
+        uint64_t start_fft_freq_hz_;        // the FFT runs from this frequency to this + sample rate
         uint64_t start_freq_hz_;            // sample bins at or past this frequency
         uint64_t end_freq_hz_;              // don't sample bins past this frequency
         double bin_bw_hz_;                  // each bin is this wide

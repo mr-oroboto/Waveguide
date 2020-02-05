@@ -23,7 +23,7 @@ SimpleSpectrum::~SimpleSpectrum()
 void SimpleSpectrum::resetState()
 {
     frame_ = nullptr;
-    
+
     window_manager_->setHandleMouseCallback(nullptr);
     samples_ = sampler_->getSamples();
 

@@ -20,19 +20,10 @@
 
 ScenarioCollection scenarios;
 
-void adjustCoalesceFactors(bool increase)
+void adjustCoalesceFactors(SimpleSpectrum* scenario, bool increase)
 {
-    for (unsigned long i = 0; i < scenarios.getScenarioCount(); i++)
-    {
-        Scenario* base_scenario = scenarios.getScenario(i);
-        SimpleSpectrum* scenario = dynamic_cast<SimpleSpectrum*>(base_scenario);
-
-        if (scenario != nullptr)
-        {
-            uint32_t coalesce_factor = scenario->getCoalesceFactor();
-            scenario->setCoalesceFactor(increase ? coalesce_factor * 2 : coalesce_factor / 2);
-        }
-    }
+    uint32_t coalesce_factor = scenario->getCoalesceFactor();
+    scenario->setCoalesceFactor(increase ? coalesce_factor * 2 : coalesce_factor / 2);
 
     scenarios.nextScenario();
     scenarios.previousScenario();
@@ -56,11 +47,11 @@ bool handleKeystroke(WindowManager* window_manager, SDL_Event keystroke_event, G
                 break;
 
             case SDLK_RIGHTBRACKET:
-                adjustCoalesceFactors(false);
+                adjustCoalesceFactors(scenario, false);
                 break;
 
             case SDLK_LEFTBRACKET:
-                adjustCoalesceFactors(true);
+                adjustCoalesceFactors(scenario, true);
                 break;
 
             case SDLK_u:
