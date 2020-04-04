@@ -88,7 +88,7 @@ void LinearSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, G
 {
     uint16_t current_slice = 0;
 
-    if (samples_->getSweepCount() && current_markers_ < max_markers_)
+    if (samples_->getSweepCount() && current_interest_markers_ < max_interest_markers_)
     {
         markLocalMaxima();
     }
@@ -96,7 +96,7 @@ void LinearSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, G
     frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, static_cast<void*>(&current_slice));
 }
 
-void LinearSpectrum::clearMarkedBins()
+void LinearSpectrum::clearInterestMarkers()
 {
     if (frame_ == nullptr)
     {
@@ -109,10 +109,10 @@ void LinearSpectrum::clearMarkedBins()
     }
 
     marked_bin_text_ids_.clear();
-    SimpleSpectrum::clearMarkedBins();
+    SimpleSpectrum::clearInterestMarkers();
 }
 
-void LinearSpectrum::markBin(SimpleSpectrumRange* bin)
+void LinearSpectrum::addInterestMarkerToBin(SimpleSpectrumRange *bin)
 {
     char msg[64];
     snprintf(msg, sizeof(msg), "%.3fMHz", bin->getFrequency() / 1000000.0f);
@@ -120,7 +120,7 @@ void LinearSpectrum::markBin(SimpleSpectrumRange* bin)
 
     marked_bin_text_ids_.push_back(text_id);
 
-    SimpleSpectrum::markBin(bin);
+    SimpleSpectrum::addInterestMarkerToBin(bin);
 }
 
 bool LinearSpectrum::handleMouse(WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop)
@@ -132,7 +132,7 @@ bool LinearSpectrum::handleMouse(WindowManager* window_manager, SDL_Event mouse_
 
         if (start_picking_bin_)
         {
-            markPickedBins(start_picking_bin_);
+            highlightPickedBins(start_picking_bin_);
             return false;
         }
     }
@@ -142,7 +142,7 @@ bool LinearSpectrum::handleMouse(WindowManager* window_manager, SDL_Event mouse_
 
         if (end_picking_bin)
         {
-            markPickedBins(end_picking_bin);
+            highlightPickedBins(end_picking_bin);
             return false;
         }
     }

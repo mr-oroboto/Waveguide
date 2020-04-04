@@ -1,17 +1,21 @@
 #include "SimpleSpectrum.h"
 
-#define MARKER_REGIONS 8
+// Divide spectrum into this many regions, each of which can contain at most one interest marker.
+#define INTEREST_MARKER_REGIONS 8
 
 SimpleSpectrum::SimpleSpectrum(WindowManager *window_manager, sdr::SpectrumSampler *sampler, uint32_t bin_coalesce_factor)
         : Scenario(window_manager->getDisplayManager()),
           window_manager_(window_manager), sampler_(sampler), bin_coalesce_factor_(bin_coalesce_factor)
 {
     samples_ = sampler_->getSamples();
+
     bin_width_ = 0.5;
 
     max_freq_markers_ = 4;
-    max_markers_ = MARKER_REGIONS;
-    current_markers_ = 0;
+
+    min_interest_marking_amplitude_ = 14.0f;
+    max_interest_markers_ = INTEREST_MARKER_REGIONS;
+    current_interest_markers_ = 0;
 
     set_initial_camera_ = false;
 }
@@ -24,11 +28,12 @@ void SimpleSpectrum::resetState()
 {
     frame_ = nullptr;
 
+    // Sub-classes can register for mouse callbacks if they support them (ie. for zooming).
     window_manager_->setHandleMouseCallback(nullptr);
     samples_ = sampler_->getSamples();
 
     coalesced_bins_.clear();
-    clearMarkedBins();
+    clearInterestMarkers();
 
     set_initial_camera_ = false;
 }
@@ -45,47 +50,77 @@ void SimpleSpectrum::setCoalesceFactor(uint32_t coalesce_factor)
         return;
     }
 
-    std::cout << "Set bin coalesce factor to " << coalesce_factor << std::endl;
-
     bin_coalesce_factor_ = coalesce_factor;
+    clearInterestMarkers();
 
-    clearMarkedBins();
+    std::cout << "Set bin coalesce factor to " << bin_coalesce_factor_ << std::endl;
 }
 
-void SimpleSpectrum::clearMarkedBins()
+uint64_t SimpleSpectrum::getMaxInterestMarkers()
 {
-    marked_bins_.clear();
-    current_markers_ = 0;
+    return max_interest_markers_;
 }
 
-bool SimpleSpectrum::getBinHasBeenMarked(uint64_t bin_id)
+void SimpleSpectrum::setMaxInterestMarkers(uint64_t max_interest_markers)
 {
-    return marked_bins_.find(bin_id) != marked_bins_.end();
+    if (max_interest_markers == 0)
+    {
+        return;
+    }
+
+    max_interest_markers_ = max_interest_markers;
+    clearInterestMarkers();
+
+    std::cout << "Set max interest markers to " << max_interest_markers_ << std::endl;
 }
 
-void SimpleSpectrum::setBinHasBeenMarked(uint64_t bin_id)
+float SimpleSpectrum::getMinInterestMarkingAmplitude()
 {
-    if (current_markers_ >= max_markers_)
+    return min_interest_marking_amplitude_;
+}
+
+void SimpleSpectrum::setMinInterestMarkingAmplitude(float min_amplitude)
+{
+    min_interest_marking_amplitude_ = min_amplitude;
+    clearInterestMarkers();
+
+    std::cout << "Set min interest marker amplitude to " << min_interest_marking_amplitude_ << std::endl;
+}
+
+void SimpleSpectrum::clearInterestMarkers()
+{
+    bin_ids_with_interest_markers_.clear();
+    current_interest_markers_ = 0;
+}
+
+bool SimpleSpectrum::getBinHasInterestMarker(uint64_t bin_id)
+{
+    return bin_ids_with_interest_markers_.find(bin_id) != bin_ids_with_interest_markers_.end();
+}
+
+void SimpleSpectrum::setBinHasInterestMarker(uint64_t bin_id)
+{
+    if (current_interest_markers_ >= max_interest_markers_)
     {
         return;
     }
 
     // Don't put bin markers too close together
-    uint64_t marking_range = coalesced_bins_.size() / max_markers_;   // divide up total space into n regions, each one can only get 1 marker
-    uint64_t start = marking_range > bin_id ? 0 : bin_id - marking_range;
-    uint64_t end = (bin_id + marking_range >= coalesced_bins_.size()) ? coalesced_bins_.size() : bin_id + marking_range;
+    uint64_t marking_range = coalesced_bins_.size() / max_interest_markers_;   // divide up total space into n regions, each one can only get 1 marker
+    uint64_t start = (marking_range / 2) > bin_id ? 0 : bin_id - (marking_range / 2);
+    uint64_t end = (bin_id + (marking_range / 2) >= coalesced_bins_.size()) ? coalesced_bins_.size() : bin_id + (marking_range / 2);
 
     for (uint64_t i = start; i < end; i++)
     {
-        marked_bins_.insert(i);
+        bin_ids_with_interest_markers_.insert(i);
     }
 
-    current_markers_++;
+    current_interest_markers_++;
 }
 
 void SimpleSpectrum::markLocalMaxima()
 {
-    if (current_markers_ >= max_markers_)
+    if (current_interest_markers_ >= max_interest_markers_)
     {
         return;
     }
@@ -95,7 +130,7 @@ void SimpleSpectrum::markLocalMaxima()
     for (SimpleSpectrumRange* bin : coalesced_bins_)
     {
         float amplitude = bin->getAmplitude();
-        if (amplitude > 14.0f)
+        if (amplitude > min_interest_marking_amplitude_)
         {
             bin_amplitudes[amplitude] = bin->getBinId();
         }
@@ -103,18 +138,18 @@ void SimpleSpectrum::markLocalMaxima()
 
     for (std::map<float, uint64_t>::reverse_iterator i = bin_amplitudes.rbegin(); i != bin_amplitudes.rend(); i++)
     {
-        if ( ! getBinHasBeenMarked(i->second))
+        if ( ! getBinHasInterestMarker(i->second))
         {
             SimpleSpectrumRange* bin = coalesced_bins_[i->second];
-            markBin(bin);
+            addInterestMarkerToBin(bin);
         }
     }
 
 }
 
-void SimpleSpectrum::markBin(SimpleSpectrumRange* bin)
+void SimpleSpectrum::addInterestMarkerToBin(SimpleSpectrumRange *bin)
 {
-    setBinHasBeenMarked(bin->getBinId());
+    setBinHasInterestMarker(bin->getBinId());
 }
 
 bool SimpleSpectrum::handleMouse(WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop)
@@ -160,7 +195,7 @@ void SimpleSpectrum::retune(uint64_t start_freq_hz, uint64_t end_freq_hz, bool z
     run();
 }
 
-void SimpleSpectrum::markPickedBins(SimpleSpectrumRange* end_picking_bin)
+void SimpleSpectrum::highlightPickedBins(SimpleSpectrumRange *end_picking_bin)
 {
     if (end_picking_bin == start_picking_bin_)
     {

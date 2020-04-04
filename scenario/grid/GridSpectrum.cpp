@@ -79,7 +79,7 @@ void GridSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLf
         set_initial_camera_ = true;
     }
 
-    if (samples_->getSweepCount() && current_markers_ < max_markers_)
+    if (samples_->getSweepCount() && current_interest_markers_ < max_interest_markers_)
     {
         markLocalMaxima();
     }
@@ -87,7 +87,7 @@ void GridSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLf
     frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, static_cast<void*>(&current_slice));
 }
 
-void GridSpectrum::markBin(SimpleSpectrumRange* bin)
+void GridSpectrum::addInterestMarkerToBin(SimpleSpectrumRange *bin)
 {
     char msg[64];
     snprintf(msg, sizeof(msg), "%.3fMHz", bin->getFrequency() / 1000000.0f);
@@ -95,10 +95,10 @@ void GridSpectrum::markBin(SimpleSpectrumRange* bin)
 
     marked_bin_text_ids_.push_back(text_id);
 
-    SimpleSpectrum::markBin(bin);
+    SimpleSpectrum::addInterestMarkerToBin(bin);
 }
 
-void GridSpectrum::clearMarkedBins()
+void GridSpectrum::clearInterestMarkers()
 {
     if (frame_ == nullptr)
     {
@@ -111,5 +111,5 @@ void GridSpectrum::clearMarkedBins()
     }
 
     marked_bin_text_ids_.clear();
-    SimpleSpectrum::clearMarkedBins();
+    SimpleSpectrum::clearInterestMarkers();
 }

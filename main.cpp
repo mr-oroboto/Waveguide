@@ -29,6 +29,24 @@ void adjustCoalesceFactors(SimpleSpectrum* scenario, bool increase)
     scenarios.previousScenario();
 }
 
+void adjustMaxInterestMarkers(SimpleSpectrum* scenario, bool increase)
+{
+    uint64_t max_markers = scenario->getMaxInterestMarkers();
+    scenario->setMaxInterestMarkers(increase ? ++max_markers : --max_markers);
+
+    scenarios.nextScenario();
+    scenarios.previousScenario();
+}
+
+void adjustMinInterestMarkingAmplitude(SimpleSpectrum* scenario, bool increase)
+{
+    float min_amplitude = scenario->getMinInterestMarkingAmplitude();
+    scenario->setMinInterestMarkingAmplitude(increase ? min_amplitude + 1.0f : min_amplitude - 1.0f);
+
+    scenarios.nextScenario();
+    scenarios.previousScenario();
+}
+
 bool handleKeystroke(WindowManager* window_manager, SDL_Event keystroke_event, GLfloat secs_since_last_renderloop)
 {
     bool continue_processing_keystrokes = true;
@@ -49,9 +67,22 @@ bool handleKeystroke(WindowManager* window_manager, SDL_Event keystroke_event, G
             case SDLK_RIGHTBRACKET:
                 adjustCoalesceFactors(scenario, false);
                 break;
-
             case SDLK_LEFTBRACKET:
                 adjustCoalesceFactors(scenario, true);
+                break;
+
+            case SDLK_o:
+                adjustMaxInterestMarkers(scenario, false);
+                break;
+            case SDLK_p:
+                adjustMaxInterestMarkers(scenario, true);
+                break;
+
+            case SDLK_COMMA:
+                adjustMinInterestMarkingAmplitude(scenario, false);
+                break;
+            case SDLK_PERIOD:
+                adjustMinInterestMarkingAmplitude(scenario, true);
                 break;
 
             case SDLK_u:
@@ -59,7 +90,7 @@ bool handleKeystroke(WindowManager* window_manager, SDL_Event keystroke_event, G
                 break;
 
             case SDLK_c:
-                scenario->clearMarkedBins();
+                scenario->clearInterestMarkers();
                 break;
         }
     }

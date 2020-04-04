@@ -56,7 +56,7 @@ void LinearTimeSpectrum::updateSceneCallback(GLfloat secs_since_rendering_starte
         addSpectrumRanges(current_slice_, secs_since_framequeue_started);
     }
 
-//    if (samples_->getSweepCount() && current_markers_ < max_markers_)
+//    if (samples_->getSweepCount() && current_interest_markers_ < max_interest_markers_)
 //    {
 //        markLocalMaxima();
 //    }
@@ -116,12 +116,12 @@ void LinearTimeSpectrum::addSpectrumRanges(uint16_t slice_id, GLfloat secs_since
     }
 }
 
-void LinearTimeSpectrum::markBin(SimpleSpectrumRange* bin)
+void LinearTimeSpectrum::addInterestMarkerToBin(SimpleSpectrumRange *bin)
 {
     char msg[64];
     snprintf(msg, sizeof(msg), "%.3fMHz", bin->getFrequency() / 1000000.0f);
     frame_->addText(msg, bin->getPosition().x, bin->getAmplitude() + 0.2f, bin->getPosition().z, false, 0.02, glm::vec3(1.0, 1.0, 1.0));
 
-    SimpleSpectrum::markBin(bin);
+    SimpleSpectrum::addInterestMarkerToBin(bin);
 }
 

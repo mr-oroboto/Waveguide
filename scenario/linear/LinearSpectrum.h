@@ -10,16 +10,18 @@ public:
     ~LinearSpectrum();
 
     void run();
-    void clearMarkedBins();
+    void clearInterestMarkers();
 
 private:
     void updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame);
     bool handleMouse(WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop);
 
-    void markBin(SimpleSpectrumRange* bin);
+    void addInterestMarkerToBin(SimpleSpectrumRange *bin);
 
+    // Ray casts through spectrum bins on a mouse click to find zoom start / end points.
     SimpleSpectrumRange* findFirstIntersectedBin(GLuint mouse_x, GLuint mouse_y);
 
+    // IDs of the text objects used on SimpleSpectrumRanges that have interest markers.
     std::vector<unsigned long> marked_bin_text_ids_;
 };
 

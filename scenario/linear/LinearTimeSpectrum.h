@@ -13,7 +13,7 @@ public:
 
 private:
     void updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame);
-    void markBin(SimpleSpectrumRange* bin);
+    void addInterestMarkerToBin(SimpleSpectrumRange *bin);
 
     void addSpectrumRanges(uint16_t slice_id, GLfloat secs_since_framequeue_started);
 

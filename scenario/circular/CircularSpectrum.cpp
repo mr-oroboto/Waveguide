@@ -10,7 +10,7 @@ CircularSpectrum::CircularSpectrum(WindowManager* window_manager, sdr::SpectrumS
         : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
     radius_ = 8;
-    max_markers_ = 12;
+    max_interest_markers_ = 12;
     max_freq_markers_ = 4;
 }
 
@@ -89,7 +89,7 @@ void CircularSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started,
 {
     uint16_t current_ring = 0;
 
-    if (samples_->getSweepCount() && current_markers_ < max_markers_)
+    if (samples_->getSweepCount() && current_interest_markers_ < max_interest_markers_)
     {
         markLocalMaxima();
     }
@@ -97,7 +97,7 @@ void CircularSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started,
     frame_->updateObjects(secs_since_rendering_started, secs_since_framequeue_started, secs_since_last_renderloop, secs_since_last_frame, static_cast<void*>(&current_ring));
 }
 
-void CircularSpectrum::markBin(SimpleSpectrumRange* bin)
+void CircularSpectrum::addInterestMarkerToBin(SimpleSpectrumRange *bin)
 {
     char msg[64];
     snprintf(msg, sizeof(msg), "%.3fMHz", bin->getFrequency() / 1000000.0f);
@@ -109,10 +109,10 @@ void CircularSpectrum::markBin(SimpleSpectrumRange* bin)
 
     marked_bin_text_ids_.push_back(text_id);
 
-    SimpleSpectrum::markBin(bin);
+    SimpleSpectrum::addInterestMarkerToBin(bin);
 }
 
-void CircularSpectrum::clearMarkedBins()
+void CircularSpectrum::clearInterestMarkers()
 {
     if (frame_ == nullptr)
     {
@@ -125,5 +125,5 @@ void CircularSpectrum::clearMarkedBins()
     }
 
     marked_bin_text_ids_.clear();
-    SimpleSpectrum::clearMarkedBins();
+    SimpleSpectrum::clearInterestMarkers();
 }

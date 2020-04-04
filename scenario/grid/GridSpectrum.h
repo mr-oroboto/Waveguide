@@ -10,11 +10,11 @@ public:
     ~GridSpectrum();
 
     void run();
-    void clearMarkedBins();
+    void clearInterestMarkers();
 
 private:
     void updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame);
-    void markBin(SimpleSpectrumRange* bin);
+    void addInterestMarkerToBin(SimpleSpectrumRange *bin);
 
     std::vector<unsigned long> marked_bin_text_ids_;
 };
