@@ -19,8 +19,12 @@ public:
     uint64_t getEndFrequency();
 
     uint32_t getDwellTime();
-    float getGain();
     uint16_t getAveragingWindow();
+
+    float getGain();
+    bool getAgc();
+
+    bool getDcSpikeRemoval();
 
 private:
     static error_t parse_argument(int key, char *arg, struct argp_state* state);
@@ -36,8 +40,12 @@ private:
     uint64_t end_frequency_;
 
     uint32_t dwell_time_;
-    float gain_;
     uint16_t averaging_window_;
+
+    float gain_;
+    bool enable_agc_;
+
+    bool enable_dc_spike_removal_;
 
     static argp parser_;
     static argp_option options_[];

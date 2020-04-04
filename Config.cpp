@@ -10,11 +10,15 @@ Config::Config(int argc, char** argv)
     start_frequency_ = 88000000;
     end_frequency_ = 108000000;
 
-    sample_rate_ = 2400000;
-    dwell_time_ = 1000000;
+    sample_rate_ = 1920000;
 
-    gain_ = 41.6f;
-    averaging_window_ = 4;
+    dwell_time_ = 2000000;
+    averaging_window_ = 6;
+
+    gain_ = 15.0f;
+    enable_agc_ = true;
+
+    enable_dc_spike_removal_ = true;
 
     argp_parse(&parser_, argc, argv, 0, 0, this);
 
@@ -46,6 +50,12 @@ error_t Config::parse(int key, char* arg)
             break;
         case 'g':
             gain_ = atof(arg);
+            break;
+        case 'a':
+            enable_agc_ = strtoul(arg, NULL, 10);
+            break;
+        case 'x':
+            enable_dc_spike_removal_ = strtoul(arg, NULL, 10);
             break;
         case 'c':
             device_count_ = static_cast<uint8_t>(strtoul(arg, NULL, 10));
@@ -119,6 +129,16 @@ float Config::getGain()
     return gain_;
 }
 
+bool Config::getAgc()
+{
+    return enable_agc_;
+}
+
+bool Config::getDcSpikeRemoval()
+{
+    return enable_dc_spike_removal_;
+}
+
 uint16_t Config::getAveragingWindow()
 {
     return averaging_window_;
@@ -137,7 +157,9 @@ argp_option Config::options_[] = {
         {"sample_rate", 'r', "RATE", 0, "Hardware sample rate in Hz (default 2400000Hz (2.4Mhz))", 1},
         {"averaging_window", 'w', "COUNT", 0, "Number of samples to average FFT measurements over (default 4)", 1},
         {"dwell", 'd', "USEC", 0, "Dwell time per sampling slice in usec (default 500000 (0.5 sec))", 1},
-        {"gain", 'g', "DB", 0, "Hardware gain (default 41.6)", 1},
+        {"gain", 'g', "DB", 0, "Hardware gain (default 15.0)", 1},
+        {"agc", 'a', "ON", 0, "Enable auto gain control (default 1 (on))", 1},
+        {"despike", 'x', "ON", 0, "Enable DC spike removal (default 1 (on))", 1},
         {"device_count", 'c', "COUNT", 0, "Use this many hardware devices to scan range (default 1)", 1},
         0
 };
