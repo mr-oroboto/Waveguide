@@ -73,7 +73,7 @@ protected:
     void resetState();
 
     WindowManager* window_manager_;
-    Frame* frame_;
+    std::shared_ptr<Frame> frame_;
     bool set_initial_camera_;
 
     // Interface to SDR hardware.
