@@ -1,6 +1,7 @@
 #include "CylindricalSpectrum.h"
 
 #include <cmath>
+#include <iostream>
 
 #include "scenario/RotatedSpectrumRange.h"
 
@@ -12,10 +13,6 @@ CylindricalSpectrum::CylindricalSpectrum(WindowManager* window_manager, sdr::Spe
     rings_ = 0;
     current_ring_ = 0;
     current_sweep_ = 0;
-}
-
-CylindricalSpectrum::~CylindricalSpectrum()
-{
 }
 
 void CylindricalSpectrum::run()

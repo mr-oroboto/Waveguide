@@ -3,11 +3,10 @@
 
 #include "scenario/SimpleSpectrum.h"
 
-class CylindricalSpectrum : public SimpleSpectrum
-{
+class CylindricalSpectrum : public SimpleSpectrum {
 public:
     CylindricalSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
-    ~CylindricalSpectrum();
+    ~CylindricalSpectrum() = default;
 
     void run();
 

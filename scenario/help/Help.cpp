@@ -8,10 +8,6 @@ Help::Help(DisplayManager *display_manager, size_t screen_x_res, size_t screen_y
 {
 }
 
-Help::~Help()
-{
-}
-
 void Help::run()
 {
     FrameQueue* frame_queue = new FrameQueue(display_manager_, true);

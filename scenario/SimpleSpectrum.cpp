@@ -1,5 +1,7 @@
 #include "SimpleSpectrum.h"
 
+#include <iostream>
+
 // Divide spectrum into this many regions, each of which can contain at most one interest marker.
 #define INTEREST_MARKER_REGIONS 8
 
@@ -18,10 +20,6 @@ SimpleSpectrum::SimpleSpectrum(WindowManager *window_manager, sdr::SpectrumSampl
     current_interest_markers_ = 0;
 
     set_initial_camera_ = false;
-}
-
-SimpleSpectrum::~SimpleSpectrum()
-{
 }
 
 void SimpleSpectrum::resetState()

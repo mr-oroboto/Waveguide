@@ -9,10 +9,6 @@ SimpleSpectrumRange::SimpleSpectrumRange(DisplayManager* display_manager, Primit
     picked_ = false;
 }
 
-SimpleSpectrumRange::~SimpleSpectrumRange()
-{
-}
-
 float SimpleSpectrumRange::getAmplitude(bool refresh)
 {
     if ( ! refresh)

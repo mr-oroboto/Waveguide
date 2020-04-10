@@ -1,5 +1,6 @@
 #include "SphereSpectrum.h"
 
+#include <iostream>
 #include <cmath>
 
 #include "scenario/RotatedSpectrumRange.h"
@@ -10,10 +11,6 @@ SphereSpectrum::SphereSpectrum(WindowManager* window_manager, sdr::SpectrumSampl
     radius_ = 8;
     rings_ = 10;
     current_ring_ = 0;
-}
-
-SphereSpectrum::~SphereSpectrum()
-{
 }
 
 void SphereSpectrum::run()

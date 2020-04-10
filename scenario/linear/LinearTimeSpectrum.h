@@ -3,11 +3,10 @@
 
 #include "scenario/SimpleSpectrum.h"
 
-class LinearTimeSpectrum : public SimpleSpectrum
-{
+class LinearTimeSpectrum : public SimpleSpectrum {
 public:
     LinearTimeSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
-    ~LinearTimeSpectrum();
+    ~LinearTimeSpectrum() = default;
 
     void run();
 

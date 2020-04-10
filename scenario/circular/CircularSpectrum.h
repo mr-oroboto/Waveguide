@@ -3,11 +3,10 @@
 
 #include "scenario/SimpleSpectrum.h"
 
-class CircularSpectrum : public SimpleSpectrum
-{
+class CircularSpectrum : public SimpleSpectrum {
 public:
     CircularSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
-    ~CircularSpectrum();
+    ~CircularSpectrum() = default;
 
     void run();
     void clearInterestMarkers();

@@ -1,5 +1,8 @@
-#include <scenario/SimpleSpectrum.h>
 #include "LinearSpectrum.h"
+
+#include <iostream>
+
+#include <scenario/SimpleSpectrum.h>
 
 LinearSpectrum::LinearSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
         : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
@@ -8,10 +11,6 @@ LinearSpectrum::LinearSpectrum(WindowManager* window_manager, sdr::SpectrumSampl
     last_picked_bin_ = nullptr;
 
     max_freq_markers_ = 4;
-}
-
-LinearSpectrum::~LinearSpectrum()
-{
 }
 
 void LinearSpectrum::run()

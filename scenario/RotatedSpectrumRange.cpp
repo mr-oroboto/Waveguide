@@ -11,10 +11,6 @@ RotatedSpectrumRange::RotatedSpectrumRange(DisplayManager* display_manager, Prim
     rotate_around_y_ = true;
 }
 
-RotatedSpectrumRange::~RotatedSpectrumRange()
-{
-}
-
 void RotatedSpectrumRange::setEnableRotationAroundY(bool enabled)
 {
     rotate_around_y_ = enabled;

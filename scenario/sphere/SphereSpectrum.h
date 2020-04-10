@@ -3,11 +3,10 @@
 
 #include "scenario/SimpleSpectrum.h"
 
-class SphereSpectrum : public SimpleSpectrum
-{
+class SphereSpectrum : public SimpleSpectrum {
 public:
     SphereSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
-    ~SphereSpectrum();
+    ~SphereSpectrum() = default;
 
     void run();
 

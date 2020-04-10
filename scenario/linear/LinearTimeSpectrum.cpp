@@ -1,15 +1,13 @@
 #include "LinearTimeSpectrum.h"
 
+#include <iostream>
+
 LinearTimeSpectrum::LinearTimeSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
         : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
     slices_ = 0;
     current_slice_ = 0;
     current_sweep_ = 0;
-}
-
-LinearTimeSpectrum::~LinearTimeSpectrum()
-{
 }
 
 void LinearTimeSpectrum::run()

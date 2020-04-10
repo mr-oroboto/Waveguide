@@ -3,11 +3,10 @@
 
 #include "scenario/SimpleSpectrum.h"
 
-class GridSpectrum : public SimpleSpectrum
-{
+class GridSpectrum : public SimpleSpectrum {
 public:
     GridSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor);
-    ~GridSpectrum();
+    ~GridSpectrum() = default;
 
     void run();
     void clearInterestMarkers();

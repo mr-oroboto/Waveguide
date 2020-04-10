@@ -1,11 +1,9 @@
 #include "GridSpectrum.h"
 
+#include <iostream>
+
 GridSpectrum::GridSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
         : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
-{
-}
-
-GridSpectrum::~GridSpectrum()
 {
 }
 

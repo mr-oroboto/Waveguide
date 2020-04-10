@@ -12,11 +12,10 @@
 #include "sdr/SpectrumSamples.h"
 
 // Base class from which all spectrum display scenarios inherit.
-class SimpleSpectrum : public Scenario
-{
+class SimpleSpectrum : public Scenario {
 public:
     SimpleSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
-    virtual ~SimpleSpectrum();
+    virtual ~SimpleSpectrum() = default;
 
     // Get and set the coalesce factor for the underlying sdr::FrequencyBin instances (see bin_coalesce_factor_ below).
     uint32_t getCoalesceFactor();

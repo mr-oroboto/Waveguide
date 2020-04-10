@@ -1,6 +1,7 @@
 #include "CircularSpectrum.h"
 
 #include <cmath>
+#include <iostream>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -12,10 +13,6 @@ CircularSpectrum::CircularSpectrum(WindowManager* window_manager, sdr::SpectrumS
     radius_ = 8;
     max_interest_markers_ = 12;
     max_freq_markers_ = 4;
-}
-
-CircularSpectrum::~CircularSpectrum()
-{
 }
 
 void CircularSpectrum::run()
