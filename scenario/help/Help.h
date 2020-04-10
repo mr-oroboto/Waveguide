@@ -3,7 +3,7 @@
 
 #include "Insight.h"
 
-class Help : public Scenario {
+class Help : public insight::scenario::Scenario {
 public:
     Help(DisplayManager* display_manager, size_t screen_x_res, size_t screen_y_res);
     ~Help() = default;

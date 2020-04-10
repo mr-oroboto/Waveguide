@@ -12,7 +12,7 @@
 #include "sdr/SpectrumSamples.h"
 
 // Base class from which all spectrum display scenarios inherit.
-class SimpleSpectrum : public Scenario {
+class SimpleSpectrum : public insight::scenario::Scenario {
 public:
     SimpleSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
     virtual ~SimpleSpectrum() = default;

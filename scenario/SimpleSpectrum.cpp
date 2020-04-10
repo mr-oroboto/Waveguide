@@ -6,7 +6,7 @@
 #define INTEREST_MARKER_REGIONS 8
 
 SimpleSpectrum::SimpleSpectrum(WindowManager *window_manager, sdr::SpectrumSampler *sampler, uint32_t bin_coalesce_factor)
-        : Scenario(window_manager->getDisplayManager()),
+        : insight::scenario::Scenario(window_manager->getDisplayManager()),
           window_manager_(window_manager), sampler_(sampler), bin_coalesce_factor_(bin_coalesce_factor)
 {
     samples_ = sampler_->getSamples();

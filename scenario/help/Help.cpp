@@ -3,7 +3,7 @@
 #define VERTICAL_OFFSET 30.0f
 
 Help::Help(DisplayManager *display_manager, size_t screen_x_res, size_t screen_y_res) :
-        Scenario(display_manager),
+        insight::scenario::Scenario(display_manager),
         screen_x_res_(screen_x_res), screen_y_res_(screen_y_res)
 {
 }

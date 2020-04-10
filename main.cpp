@@ -20,7 +20,7 @@
 #define WINDOW_X_SIZE 2560
 #define WINDOW_Y_SIZE 1440
 
-ScenarioCollection scenarios;
+insight::scenario::ScenarioCollection scenarios;
 
 void adjustCoalesceFactors(SimpleSpectrum* scenario, bool increase)
 {
