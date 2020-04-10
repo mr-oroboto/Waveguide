@@ -1,5 +1,7 @@
-#include <iostream>
 #include <csignal>
+#include <iostream>
+#include <memory>
+#include <string>
 
 #include <unistd.h>
 
@@ -145,6 +147,7 @@ int main(int argc, char** argv)
     sdr::SpectrumSampler* sampler =  new sdr::SpectrumSampler(config);
     sampler->start(config->getStartFrequency(), config->getEndFrequency());
 
+    std::unique_ptr<WindowManager> window_manager1 = std::make_unique<WindowManager>(WINDOW_X_SIZE, WINDOW_Y_SIZE, WINDOW_FULLSCREEN, glm::vec3(0, 0, 80));
     WindowManager* window_manager = new WindowManager(WINDOW_X_SIZE, WINDOW_Y_SIZE, WINDOW_FULLSCREEN, glm::vec3(0, 0, 80));
     if ( ! window_manager->initialise())
     {
@@ -153,8 +156,8 @@ int main(int argc, char** argv)
     }
 
     DisplayManager* display_manager = window_manager->getDisplayManager();
-
-    if ( ! display_manager->getTextDrawer()->registerFont(Font::Type::FONT_DEFAULT, "/home/sysop/ClionProjects/Insight/font/Vera.ttf"))
+    std::string font_path = config->getFontPath().append("/Vera.ttf");
+    if ( ! display_manager->registerFont(Font::Type::FONT_DEFAULT, font_path))
     {
         std::cerr << "Failed to register font" << std::endl;
         return -1;

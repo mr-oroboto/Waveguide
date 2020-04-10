@@ -9,10 +9,10 @@ find_package(OpenGL REQUIRED)
 find_package(glm REQUIRED)
 find_package(Freetype REQUIRED)
 
-set(INSIGHT_DIR /home/sysop/ClionProjects/Insight)
+# INSIGHT_DIR must be passed to cmake (ie. cmake .. -DINSIGHT_DIR=/path/to/Insight/src
 set(INSIGHT_INCLUDE_DIR ${INSIGHT_DIR})
 set(INSIGHT_LIBRARIES ${INSIGHT_DIR}/build1/libInsight.a)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 include_directories(. ${INSIGHT_INCLUDE_DIR} ${SDL2_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${GLM_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIR} /usr/include/freetype2)
 

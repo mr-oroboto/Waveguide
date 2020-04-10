@@ -7,18 +7,21 @@ Config::Config(int argc, char** argv)
     device_prefix_ = "rtl";
     device_count_ = 1;
 
-    start_frequency_ = 88000000;
-    end_frequency_ = 108000000;
+    start_frequency_ = 480000000;
+    end_frequency_ = 600000000;
 
     sample_rate_ = 1920000;
 
-    dwell_time_ = 2000000;
+    dwell_time_ = 5000000;
+
     averaging_window_ = 6;
 
     gain_ = 15.0f;
     enable_agc_ = true;
 
     enable_dc_spike_removal_ = true;
+
+    font_path_ = "/usr/share/fonts/truetype/ttf-bitstream-vera";
 
     argp_parse(&parser_, argc, argv, 0, 0, this);
 
@@ -57,11 +60,17 @@ error_t Config::parse(int key, char* arg)
         case 'x':
             enable_dc_spike_removal_ = strtoul(arg, NULL, 10);
             break;
+        case 'p':
+            device_prefix_ = std::string(arg);
+            break;
         case 'c':
             device_count_ = static_cast<uint8_t>(strtoul(arg, NULL, 10));
             break;
         case 'w':
             averaging_window_ = static_cast<uint16_t>(strtoul(arg, NULL, 10));
+            break;
+        case 'f':
+            font_path_ = std::string(arg);
             break;
 
         default:
@@ -144,6 +153,11 @@ uint16_t Config::getAveragingWindow()
     return averaging_window_;
 }
 
+std::string Config::getFontPath()
+{
+    return font_path_;
+}
+
 argp Config::parser_ = {
         options_,
         parse_argument,
@@ -160,7 +174,9 @@ argp_option Config::options_[] = {
         {"gain", 'g', "DB", 0, "Hardware gain (default 15.0)", 1},
         {"agc", 'a', "ON", 0, "Enable auto gain control (default 1 (on))", 1},
         {"despike", 'x', "ON", 0, "Enable DC spike removal (default 1 (on))", 1},
+        {"device_prefix", 'p', "STRING", 0, "Device prefix as known by osmosdr (default 'rtl')", 1},
         {"device_count", 'c', "COUNT", 0, "Use this many hardware devices to scan range (default 1)", 1},
+        {"font_path", 'f', "STRING", 0, "Full path (excluding trailing slash) to where TTF fonts are stored", 2},
         0
 };
 

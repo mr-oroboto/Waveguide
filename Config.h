@@ -1,9 +1,8 @@
 #ifndef WAVEGUIDE_CONFIG_H
 #define WAVEGUIDE_CONFIG_H
 
-#include <string>
-
 #include <cstdint>
+#include <string>
 
 #include <argp.h>
 
@@ -26,6 +25,8 @@ public:
 
     bool getDcSpikeRemoval();
 
+    std::string getFontPath();
+
 private:
     static error_t parse_argument(int key, char *arg, struct argp_state* state);
     error_t parse(int key, char *arg);
@@ -46,6 +47,8 @@ private:
     bool enable_agc_;
 
     bool enable_dc_spike_removal_;
+
+    std::string font_path_;
 
     static argp parser_;
     static argp_option options_[];
