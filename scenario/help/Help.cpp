@@ -1,8 +1,10 @@
 #include "Help.h"
 
+#include <iostream>
+
 #define VERTICAL_OFFSET 30.0f
 
-Help::Help(DisplayManager *display_manager, size_t screen_x_res, size_t screen_y_res) :
+Help::Help(insight::DisplayManager *display_manager, size_t screen_x_res, size_t screen_y_res) :
         insight::scenario::Scenario(display_manager),
         screen_x_res_(screen_x_res), screen_y_res_(screen_y_res)
 {
@@ -10,7 +12,7 @@ Help::Help(DisplayManager *display_manager, size_t screen_x_res, size_t screen_y
 
 void Help::run()
 {
-    FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
+    std::unique_ptr<insight::FrameQueue> frame_queue = std::make_unique<insight::FrameQueue>(display_manager_, true);
     frame_queue->setFrameRate(1);
 
     frame_ = frame_queue->newFrame();
@@ -42,7 +44,10 @@ void Help::run()
     frame_queue->enqueueFrame(frame_);
 
     frame_queue->setReady();
-    frame_queue->setActive();    // transfer ownership to DisplayManager
+    if (frame_queue->setActive())
+    {
+        display_manager_->setFrameQueue(std::move(frame_queue));
+    }
 }
 
 std::vector<std::string> Help::options_ = {

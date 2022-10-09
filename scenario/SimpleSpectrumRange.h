@@ -6,9 +6,9 @@
 
 #include <vector>
 
-class SimpleSpectrumRange : public SceneObject {
+class SimpleSpectrumRange : public insight::SceneObject {
 public:
-    SimpleSpectrumRange(DisplayManager* display_manager, Primitive::Type type, uint16_t slice_id, uint64_t bin_id, const glm::vec3& world_coords, const glm::vec3& colour, const std::vector<sdr::FrequencyBin const*>& frequency_bins);
+    SimpleSpectrumRange(insight::DisplayManager* display_manager, insight::primitive::Primitive::Type type, uint16_t slice_id, uint64_t bin_id, const glm::vec3& world_coords, const glm::vec3& colour, const std::vector<sdr::FrequencyBin const*>& frequency_bins);
     virtual ~SimpleSpectrumRange() = default;
 
     virtual void draw(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame, bool use_colour = true);

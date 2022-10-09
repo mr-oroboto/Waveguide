@@ -5,13 +5,13 @@
 
 class Help : public insight::scenario::Scenario {
 public:
-    Help(DisplayManager* display_manager, size_t screen_x_res, size_t screen_y_res);
+    Help(insight::DisplayManager* display_manager, size_t screen_x_res, size_t screen_y_res);
     ~Help() = default;
 
     void run();
 
 protected:
-    std::shared_ptr<Frame> frame_;
+    std::shared_ptr<insight::Frame> frame_;
 
     size_t screen_x_res_;
     size_t screen_y_res_;

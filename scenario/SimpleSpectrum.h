@@ -14,7 +14,7 @@
 // Base class from which all spectrum display scenarios inherit.
 class SimpleSpectrum : public insight::scenario::Scenario {
 public:
-    SimpleSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
+    SimpleSpectrum(insight::WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
     virtual ~SimpleSpectrum() = default;
 
     // Get and set the coalesce factor for the underlying sdr::FrequencyBin instances (see bin_coalesce_factor_ below).
@@ -49,9 +49,6 @@ protected:
     // Called when redrawing the scene.
     virtual void updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame) = 0;
 
-    // Handle mouse callbacks (ie. notification of mouse down, click, mouse up etc).
-    virtual bool handleMouse(WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop);
-
     // Called when updating the scene and fewer than max_interest_markers_ frequencies of interest have been marked.
     // Finds all SimpleSpectrumRange instances whose amplitude is greater than min_interest_marking_amplitude_ and
     // marks those with the highest amplitude by using addInterestMarkerToBin().
@@ -71,9 +68,8 @@ protected:
     // Called by sub-classes when the Scenario is run() by ScenarioCollection.
     void resetState();
 
-    WindowManager* window_manager_;
-    std::shared_ptr<Frame> frame_;
-    bool set_initial_camera_;
+    insight::WindowManager* window_manager_;
+    std::shared_ptr<insight::Frame> frame_;
 
     // Interface to SDR hardware.
     sdr::SpectrumSampler* sampler_;

@@ -4,7 +4,7 @@
 
 #include <scenario/SimpleSpectrum.h>
 
-LinearSpectrum::LinearSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
+LinearSpectrum::LinearSpectrum(insight::WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
         : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
     start_picking_bin_ = nullptr;
@@ -24,10 +24,10 @@ void LinearSpectrum::run()
      */
     resetState();
 
-    window_manager_->setHandleMouseCallback(std::bind(&LinearSpectrum::handleMouse, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    display_manager_->resetCamera(glm::vec3(0, 5, 31));
     display_manager_->setPerspective(0.1f, 100.0f, 45.0f);
 
-    FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
+    std::unique_ptr<insight::FrameQueue> frame_queue = std::make_unique<insight::FrameQueue>(display_manager_, true);
     frame_queue->setFrameRate(1);
 
     frame_ = frame_queue->newFrame(false);
@@ -57,7 +57,7 @@ void LinearSpectrum::run()
         glm::vec3 world_coords = start_coords;
         world_coords.x += (bin_id * bin_width_);
 
-        SimpleSpectrumRange* bin = new SimpleSpectrumRange(display_manager_, Primitive::Type::RECTANGLE, 0, bin_id, world_coords, glm::vec3(1, 1, 1), frequency_bins);
+        SimpleSpectrumRange* bin = new SimpleSpectrumRange(display_manager_, insight::primitive::Primitive::Type::RECTANGLE, 0, bin_id, world_coords, glm::vec3(1, 1, 1), frequency_bins);
         bin->setScale(bin_width_, 1.0, 1.0);
 
         coalesced_bins_.push_back(bin);
@@ -75,12 +75,15 @@ void LinearSpectrum::run()
     snprintf(msg, sizeof(msg), "Linear Perspective (%.3fMhz - %.3fMhz)", sampler_->getStartFrequency() / 1000000.0f, sampler_->getEndFrequency() / 1000000.0f);
     frame_->addText(msg, 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
 
-    frame_queue->enqueueFrame(frame_);  // @todo we should use a shared pointer so we also retain ownership
+    frame_queue->enqueueFrame(frame_);
 
     display_manager_->setUpdateSceneCallback(std::bind(&LinearSpectrum::updateSceneCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
     frame_queue->setReady();
-    frame_queue->setActive();    // transfer ownership to DisplayManager
+    if (frame_queue->setActive())
+    {
+       display_manager_->setFrameQueue(std::move(frame_queue));
+    }
 }
 
 void LinearSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame)
@@ -122,7 +125,49 @@ void LinearSpectrum::addInterestMarkerToBin(SimpleSpectrumRange *bin)
     SimpleSpectrum::addInterestMarkerToBin(bin);
 }
 
-bool LinearSpectrum::handleMouse(WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop)
+void LinearSpectrum::handleKeystroke(insight::WindowManager* window_manager, SDL_Event keystroke_event, GLfloat secs_since_last_renderloop)
+{
+    bool update_camera_coords = false;
+    GLfloat camera_speed = 10.0f;
+
+    GLfloat camera_speed_increment = camera_speed * secs_since_last_renderloop;
+    glm::vec3 camera_pointing_vector = display_manager_->getCameraPointingVector();
+    glm::vec3 camera_up_vector = display_manager_->getCameraUpVector();
+    glm::vec3 camera_coords = display_manager_->getCameraCoords();
+
+    if (keystroke_event.type == SDL_KEYDOWN)
+    {
+        if (keystroke_event.key.keysym.sym == SDLK_w)
+        {
+            camera_coords += camera_speed_increment * camera_pointing_vector;
+            update_camera_coords = true;
+        }
+        else if (keystroke_event.key.keysym.sym == SDLK_s)
+        {
+            camera_coords -= camera_speed_increment * camera_pointing_vector;
+            update_camera_coords = true;
+        }
+        else if (keystroke_event.key.keysym.sym == SDLK_a)
+        {
+            // move left along normal to the camera direction and world up
+            camera_coords -= glm::normalize(glm::cross(camera_pointing_vector, camera_up_vector)) * camera_speed_increment;
+            update_camera_coords = true;
+        }
+        else if (keystroke_event.key.keysym.sym == SDLK_d)
+        {
+            // move right along normal to camera direction and world up
+            camera_coords += glm::normalize(glm::cross(camera_pointing_vector, camera_up_vector)) * camera_speed_increment;
+            update_camera_coords = true;
+        }
+    }
+
+    if (update_camera_coords)
+    {
+        window_manager->getDisplayManager()->setCameraCoords(camera_coords);
+    }
+}
+
+void LinearSpectrum::handleMouse(insight::WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop)
 {
     if (mouse_event.type == SDL_MOUSEBUTTONDOWN && mouse_event.button.button == SDL_BUTTON_LEFT)
     {
@@ -132,7 +177,7 @@ bool LinearSpectrum::handleMouse(WindowManager* window_manager, SDL_Event mouse_
         if (start_picking_bin_)
         {
             highlightPickedBins(start_picking_bin_);
-            return false;
+            return;
         }
     }
     else if (start_picking_bin_ && mouse_event.type == SDL_MOUSEMOTION)
@@ -142,7 +187,7 @@ bool LinearSpectrum::handleMouse(WindowManager* window_manager, SDL_Event mouse_
         if (end_picking_bin)
         {
             highlightPickedBins(end_picking_bin);
-            return false;
+            return;
         }
     }
     else if (start_picking_bin_ && mouse_event.type == SDL_MOUSEBUTTONUP)
@@ -167,8 +212,6 @@ bool LinearSpectrum::handleMouse(WindowManager* window_manager, SDL_Event mouse_
         start_picking_bin_ = nullptr;
         last_picked_bin_ = nullptr;
     }
-
-    return true;
 }
 
 SimpleSpectrumRange* LinearSpectrum::findFirstIntersectedBin(GLuint mouse_x, GLuint mouse_y)
@@ -202,4 +245,3 @@ SimpleSpectrumRange* LinearSpectrum::findFirstIntersectedBin(GLuint mouse_x, GLu
 
     return nullptr;
 }
-

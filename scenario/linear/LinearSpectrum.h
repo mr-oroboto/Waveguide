@@ -5,15 +5,18 @@
 
 class LinearSpectrum : public SimpleSpectrum {
 public:
-    LinearSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
+    LinearSpectrum(insight::WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
     ~LinearSpectrum() = default;
 
     void run();
     void clearInterestMarkers();
 
+    // insight::InputHandler overrides
+    void handleKeystroke(insight::WindowManager* window_manager, SDL_Event keystroke_event, GLfloat secs_since_last_renderloop) override;
+    void handleMouse(insight::WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop) override;
+
 private:
     void updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame);
-    bool handleMouse(WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop);
 
     void addInterestMarkerToBin(SimpleSpectrumRange *bin);
 

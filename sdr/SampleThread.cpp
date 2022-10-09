@@ -9,12 +9,12 @@
 #include <unistd.h>
 
 #include <gnuradio/top_block.h>
-#include <gnuradio/analog/sig_source_c.h>
+#include <gnuradio/analog/sig_source.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/complex_to_mag_squared.h>
 #include <gnuradio/blocks/nlog10_ff.h>
-#include <gnuradio/blocks/probe_signal_vf.h>
+#include <gnuradio/blocks/probe_signal_v.h>
 #include <gnuradio/fft/fft_vcc.h>
 #include <gnuradio/filter/firdes.h>
 #include <gnuradio/blocks/null_sink.h>

@@ -4,13 +4,17 @@
 
 Config::Config(int argc, char** argv)
 {
-    device_prefix_ = "rtl";
+//  device_prefix_ = "rtl";
+    device_prefix_ = "1";
     device_count_ = 1;
 
-    start_frequency_ = 480000000;
-    end_frequency_ = 600000000;
+//    start_frequency_ = 480000000;
+//    end_frequency_ = 600000000;
+    start_frequency_ = 88000000;
+    end_frequency_ = 100000000;
 
-    sample_rate_ = 1920000;
+//  sample_rate_ = 1920000;
+    sample_rate_ = 3000000;
 
     dwell_time_ = 5000000;
 

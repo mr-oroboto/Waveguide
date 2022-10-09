@@ -5,10 +5,14 @@
 
 class LinearTimeSpectrum : public SimpleSpectrum {
 public:
-    LinearTimeSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
+    LinearTimeSpectrum(insight::WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
     ~LinearTimeSpectrum() = default;
 
     void run();
+
+    // insight::InputHandler overrides
+    void handleKeystroke(insight::WindowManager* window_manager, SDL_Event keystroke_event, GLfloat secs_since_last_renderloop) override;
+    void handleMouse(insight::WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop) override;
 
 private:
     void updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame);
@@ -19,6 +23,12 @@ private:
     uint16_t slices_;
     uint16_t current_slice_;
     uint64_t current_sweep_;
+
+    // The mouse can be used to adjust the camera pointing vector in this scenario.
+    bool tracking_mouse_;
+    GLfloat mouse_start_x_, mouse_start_y_;
+    GLfloat camera_pitch_degrees_;
+    GLfloat camera_yaw_degrees_;
 };
 
 

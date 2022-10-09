@@ -7,7 +7,7 @@
 
 #include "scenario/RotatedSpectrumRange.h"
 
-CircularSpectrum::CircularSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
+CircularSpectrum::CircularSpectrum(insight::WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
         : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
     radius_ = 8;
@@ -19,9 +19,10 @@ void CircularSpectrum::run()
 {
     resetState();
 
+    display_manager_->resetCamera(glm::vec3(0, 5, 31));
     display_manager_->setPerspective(0.1, 130.0, 45);
 
-    FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
+    insight::FrameQueue* frame_queue = new insight::FrameQueue(display_manager_, true);
     frame_queue->setFrameRate(1);
 
     frame_ = frame_queue->newFrame();
@@ -56,7 +57,7 @@ void CircularSpectrum::run()
         world_coords.x += radius_ * cos(theta);
         world_coords.y += radius_ * sin(theta);
 
-        RotatedSpectrumRange* bin = new RotatedSpectrumRange(display_manager_, Primitive::Type::LINE, 0, bin_id, world_coords, theta, 0, radius_, glm::vec3(1, 1, 1), frequency_bins);
+        RotatedSpectrumRange* bin = new RotatedSpectrumRange(display_manager_, insight::primitive::Primitive::Type::LINE, 0, bin_id, world_coords, theta, 0, radius_, glm::vec3(1, 1, 1), frequency_bins);
 
         coalesced_bins_.push_back(bin);
         frame_->addObject(bin);
@@ -74,7 +75,7 @@ void CircularSpectrum::run()
     snprintf(msg, sizeof(msg), "Circular Perspective (%.3fMhz - %.3fMhz)", sampler_->getStartFrequency() / 1000000.0f, sampler_->getEndFrequency() / 1000000.0f);
     frame_->addText(msg, 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
 
-    frame_queue->enqueueFrame(frame_);  // @todo we should use a shared pointer so we also retain ownership
+    frame_queue->enqueueFrame(frame_);
 
     display_manager_->setUpdateSceneCallback(std::bind(&CircularSpectrum::updateSceneCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 

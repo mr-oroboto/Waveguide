@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-GridSpectrum::GridSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
+GridSpectrum::GridSpectrum(insight::WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
         : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
 }
@@ -11,9 +11,12 @@ void GridSpectrum::run()
 {
     resetState();
 
+    display_manager_->resetCamera();
+    display_manager_->setCameraPointingVector(glm::vec3(1, 0, -1.0));
+    display_manager_->setCameraCoords(glm::vec3(-55, 20, 25));
     display_manager_->setPerspective(0.1, 100.0, 90);
 
-    FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
+    std::unique_ptr<insight::FrameQueue> frame_queue = std::make_unique<insight::FrameQueue>(display_manager_, true);
     frame_queue->setFrameRate(1);
 
     frame_ = frame_queue->newFrame();
@@ -39,7 +42,7 @@ void GridSpectrum::run()
         glm::vec3 world_coords = start_coords;
         world_coords.x += (bin_id % grid_width);
 
-        SimpleSpectrumRange* bin = new SimpleSpectrumRange(display_manager_, Primitive::Type::RECTANGLE, 0, bin_id, world_coords, glm::vec3(1, 1, 1), frequency_bins);
+        SimpleSpectrumRange* bin = new SimpleSpectrumRange(display_manager_, insight::primitive::Primitive::Type::RECTANGLE, 0, bin_id, world_coords, glm::vec3(1, 1, 1), frequency_bins);
 
         coalesced_bins_.push_back(bin);
         frame_->addObject(bin);
@@ -58,24 +61,20 @@ void GridSpectrum::run()
     snprintf(msg, sizeof(msg), "Grid Perspective (%.3fMhz - %.3fMhz)", sampler_->getStartFrequency() / 1000000.0f, sampler_->getEndFrequency() / 1000000.0f);
     frame_->addText(msg, 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
 
-    frame_queue->enqueueFrame(frame_);  // @todo we should use a shared pointer so we also retain ownership
+    frame_queue->enqueueFrame(frame_);
 
     display_manager_->setUpdateSceneCallback(std::bind(&GridSpectrum::updateSceneCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
     frame_queue->setReady();
-    frame_queue->setActive();    // transfer ownership to DisplayManager
+    if (frame_queue->setActive())
+    {
+        display_manager_->setFrameQueue(std::move(frame_queue));
+    }
 }
 
 void GridSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame)
 {
     uint16_t current_slice = 0;
-
-    if ( ! set_initial_camera_)
-    {
-        window_manager_->setCameraCoords(glm::vec3(-55, 20, 25));
-        window_manager_->setCameraPointingVector(glm::vec3(1, 0, -1.0));
-        set_initial_camera_ = true;
-    }
 
     if (samples_->getSweepCount() && current_interest_markers_ < max_interest_markers_)
     {

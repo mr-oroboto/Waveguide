@@ -5,7 +5,7 @@
 
 #include "scenario/RotatedSpectrumRange.h"
 
-SphereSpectrum::SphereSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
+SphereSpectrum::SphereSpectrum(insight::WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor)
         : SimpleSpectrum(window_manager, sampler, bin_coalesce_factor)
 {
     radius_ = 8;
@@ -17,9 +17,10 @@ void SphereSpectrum::run()
 {
     resetState();
 
+    display_manager_->resetCamera(glm::vec3(0, 5, 31));
     display_manager_->setPerspective(0.1f, 100.0f, 45.0f);
 
-    FrameQueue* frame_queue = new FrameQueue(display_manager_, true);
+    std::unique_ptr<insight::FrameQueue> frame_queue = std::make_unique<insight::FrameQueue>(display_manager_, true);
     frame_queue->setFrameRate(1);
 
     frame_ = frame_queue->newFrame();
@@ -65,8 +66,8 @@ void SphereSpectrum::run()
             world_coords.y += y;
             world_coords.z += z;
 
-//          bin = new RotatedSpectrumRange(display_manager_, Primitive::Type::CUBE, ring_id, bin_id, world_coords, theta, rad_per_ring, radius_, glm::vec3(1, 1, 1), frequency_bins);
-            RotatedSpectrumRange* bin = new RotatedSpectrumRange(display_manager_, Primitive::Type::TRANSFORMING_RECTANGLE, ring_id, bin_id, world_coords, theta, rad_per_ring, radius_, glm::vec3(1, 1, 1), frequency_bins);
+//          bin = new RotatedSpectrumRange(display_manager_, insight::primitive::Primitive::Type::CUBE, ring_id, bin_id, world_coords, theta, rad_per_ring, radius_, glm::vec3(1, 1, 1), frequency_bins);
+            RotatedSpectrumRange* bin = new RotatedSpectrumRange(display_manager_, insight::primitive::Primitive::Type::TRANSFORMING_RECTANGLE, ring_id, bin_id, world_coords, theta, rad_per_ring, radius_, glm::vec3(1, 1, 1), frequency_bins);
             bin->setScale(bin_width_, 1, 1);
 
             coalesced_bins_.push_back(bin);
@@ -78,12 +79,15 @@ void SphereSpectrum::run()
     snprintf(msg, sizeof(msg), "Spherical Perspective (%.3fMhz - %.3fMhz)", sampler_->getStartFrequency() / 1000000.0f, sampler_->getEndFrequency() / 1000000.0f);
     frame_->addText(msg, 10, 10, 0, true, 1.0, glm::vec3(1.0, 1.0, 1.0));
 
-    frame_queue->enqueueFrame(frame_);  // @todo we should use a shared pointer so we also retain ownership
+    frame_queue->enqueueFrame(frame_);
 
     display_manager_->setUpdateSceneCallback(std::bind(&SphereSpectrum::updateSceneCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
     frame_queue->setReady();
-    frame_queue->setActive();    // transfer ownership to DisplayManager
+    if (frame_queue->setActive())
+    {
+        display_manager_->setFrameQueue(std::move(frame_queue));
+    }
 }
 
 void SphereSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, GLfloat secs_since_framequeue_started, GLfloat secs_since_last_renderloop, GLfloat secs_since_last_frame)
@@ -104,6 +108,6 @@ void SphereSpectrum::updateSceneCallback(GLfloat secs_since_rendering_started, G
     float camera_z = 80.0 * cos(secs_since_rendering_started * 0.1 * M_PI);
     float camera_x = 80.0 * sin(secs_since_rendering_started * 0.1 * M_PI);
 
-    window_manager_->setCameraCoords(glm::vec3(camera_x, 0, camera_z));
-    window_manager_->setCameraPointingVector(glm::vec3(-camera_x, 0, -camera_z));
+    window_manager_->getDisplayManager()->setCameraCoords(glm::vec3(camera_x, 0, camera_z));
+    window_manager_->getDisplayManager()->setCameraPointingVector(glm::vec3(-camera_x, 0, -camera_z));
 }

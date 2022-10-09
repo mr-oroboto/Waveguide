@@ -5,7 +5,7 @@
 
 class CircularSpectrum : public SimpleSpectrum {
 public:
-    CircularSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
+    CircularSpectrum(insight::WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor = 1);
     ~CircularSpectrum() = default;
 
     void run();

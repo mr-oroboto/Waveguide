@@ -5,7 +5,7 @@
 
 class RotatedSpectrumRange : public SimpleSpectrumRange {
 public:
-    RotatedSpectrumRange(DisplayManager* display_manager, Primitive::Type type, uint16_t ring_id, uint64_t bin_id,
+    RotatedSpectrumRange(insight::DisplayManager* display_manager, insight::primitive::Primitive::Type type, uint16_t ring_id, uint64_t bin_id,
                        const glm::vec3& world_coords, double theta_offset, double phi_offset, double radius,
                        const glm::vec3& colour,
                        const std::vector<sdr::FrequencyBin const*>& frequency_bins);

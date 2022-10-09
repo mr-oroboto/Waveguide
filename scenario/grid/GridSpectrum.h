@@ -5,7 +5,7 @@
 
 class GridSpectrum : public SimpleSpectrum {
 public:
-    GridSpectrum(WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor);
+    GridSpectrum(insight::WindowManager* window_manager, sdr::SpectrumSampler* sampler, uint32_t bin_coalesce_factor);
     ~GridSpectrum() = default;
 
     void run();

@@ -1,9 +1,11 @@
 #include "SimpleSpectrumRange.h"
 
-SimpleSpectrumRange::SimpleSpectrumRange(DisplayManager* display_manager, Primitive::Type type, uint16_t slice_id, uint64_t bin_id,
+#include <iostream>
+
+SimpleSpectrumRange::SimpleSpectrumRange(insight::DisplayManager* display_manager, insight::primitive::Primitive::Type type, uint16_t slice_id, uint64_t bin_id,
                                          const glm::vec3& world_coords, const glm::vec3& colour,
                                          const std::vector<sdr::FrequencyBin const*>& frequency_bins) :
-        SceneObject(display_manager, type, world_coords, colour), slice_id_(slice_id), bin_id_(bin_id), frequency_bins_(frequency_bins)
+        insight::SceneObject(display_manager, type, world_coords, colour), slice_id_(slice_id), bin_id_(bin_id), frequency_bins_(frequency_bins)
 {
     amplitude_ = 0.0f;
     picked_ = false;

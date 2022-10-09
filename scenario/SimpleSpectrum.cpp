@@ -5,7 +5,7 @@
 // Divide spectrum into this many regions, each of which can contain at most one interest marker.
 #define INTEREST_MARKER_REGIONS 8
 
-SimpleSpectrum::SimpleSpectrum(WindowManager *window_manager, sdr::SpectrumSampler *sampler, uint32_t bin_coalesce_factor)
+SimpleSpectrum::SimpleSpectrum(insight::WindowManager *window_manager, sdr::SpectrumSampler *sampler, uint32_t bin_coalesce_factor)
         : insight::scenario::Scenario(window_manager->getDisplayManager()),
           window_manager_(window_manager), sampler_(sampler), bin_coalesce_factor_(bin_coalesce_factor)
 {
@@ -18,22 +18,16 @@ SimpleSpectrum::SimpleSpectrum(WindowManager *window_manager, sdr::SpectrumSampl
     min_interest_marking_amplitude_ = 14.0f;
     max_interest_markers_ = INTEREST_MARKER_REGIONS;
     current_interest_markers_ = 0;
-
-    set_initial_camera_ = false;
 }
 
 void SimpleSpectrum::resetState()
 {
     frame_ = nullptr;
 
-    // Sub-classes can register for mouse callbacks if they support them (ie. for zooming).
-    window_manager_->setHandleMouseCallback(nullptr);
     samples_ = sampler_->getSamples();
 
     coalesced_bins_.clear();
     clearInterestMarkers();
-
-    set_initial_camera_ = false;
 }
 
 uint32_t SimpleSpectrum::getCoalesceFactor()
@@ -148,11 +142,6 @@ void SimpleSpectrum::markLocalMaxima()
 void SimpleSpectrum::addInterestMarkerToBin(SimpleSpectrumRange *bin)
 {
     setBinHasInterestMarker(bin->getBinId());
-}
-
-bool SimpleSpectrum::handleMouse(WindowManager* window_manager, SDL_Event mouse_event, GLfloat secs_since_last_renderloop)
-{
-    return true;
 }
 
 void SimpleSpectrum::undoLastZoom()
